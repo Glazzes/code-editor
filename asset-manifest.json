@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/code-editor/static/css/main.2a78639e.css",
+    "main.js": "/code-editor/static/js/main.f3396560.js",
+    "static/js/148.6d9f74dd.js": "/code-editor/static/js/148.6d9f74dd.js",
+    "static/media/Bold.ttf": "/code-editor/static/media/Bold.e4f33c213728ecf55b57.ttf",
+    "static/media/Medium.ttf": "/code-editor/static/media/Medium.9d1fd4235eeb376c5f96.ttf",
+    "static/media/python.png": "/code-editor/static/media/python.52d7bb207f9868b90e39.png",
+    "static/media/bash.png": "/code-editor/static/media/bash.e2ebf7b3b1c6fd28941e.png",
+    "static/media/go.png": "/code-editor/static/media/go.dc5f85030779d0ca7c8c.png",
+    "favicon.ico": "/code-editor/favicon.ico",
+    "static/media/java.png": "/code-editor/static/media/java.6c64373d3b7415758078.png",
+    "index.html": "/code-editor/index.html",
+    "static/media/javascript.png": "/code-editor/static/media/javascript.48edf8842790d0f2b340.png",
+    "favicon-32.png": "/code-editor/favicon-32.png",
+    "favicon-16.png": "/code-editor/favicon-16.png",
+    "serve.json": "/code-editor/serve.json",
+    "manifest.json": "/code-editor/manifest.json",
+    "main.2a78639e.css.map": "/code-editor/static/css/main.2a78639e.css.map",
+    "main.f3396560.js.map": "/code-editor/static/js/main.f3396560.js.map",
+    "148.6d9f74dd.js.map": "/code-editor/static/js/148.6d9f74dd.js.map"
+  },
+  "entrypoints": [
+    "static/js/148.6d9f74dd.js",
+    "static/css/main.2a78639e.css",
+    "static/js/main.f3396560.js"
+  ]
+}
