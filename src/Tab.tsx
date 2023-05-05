@@ -1,29 +1,64 @@
-import {View, Text, StyleSheet} from 'react-native';
-import React from 'react';
+import React, { Dispatch, SetStateAction, useRef } from 'react';
 
-type TabProps = {};
+import IonIcons from '@expo/vector-icons/Ionicons';
 
-const Tab: React.FC<TabProps> = ({}) => {
+import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {emitter} from './utils/eventlistener';
+import {TabContent} from './types/tabcontent';
+
+type TabProps = {
+  index: number;
+  tab: TabContent;
+  activeTabId: string;
+  setActiveTab: Dispatch<SetStateAction<TabContent>>;
+};
+
+const Tab: React.FC<TabProps> = ({index, tab, activeTabId, setActiveTab}) => {
+  const isActive = tab.id == activeTabId;
+
+  const updateActiveTab = () => {
+    if(activeTabId != tab.id) {
+      setActiveTab(tab);
+      emitter.emit("active-tab", tab);
+    }
+  }
+
+  const sendDeleteTabEvent = () => {
+    emitter.emit("delete-tab", tab, index);
+  }
+
   return (
-    <View style={styles.root}>
-      <View style={[styles.indicator, styles.active]} />
-      <Text style={styles.text}>Main.py</Text>
-    </View>
+    <Pressable onPress={updateActiveTab} style={[styles.root, isActive ? styles.rootActive : null]}>
+      <View style={[styles.indicator, isActive ? styles.active : styles.incative ]} />
+      <Text 
+        style={styles.text}
+        numberOfLines={1}
+        ellipsizeMode={"tail"}
+      >
+        {tab.name}
+        </Text>
+      <Pressable onPress={sendDeleteTabEvent}>
+        <IonIcons name="close" size={16} color={"#f2f4f5"} />
+      </Pressable>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   root: {
-    height: 34,
+    height: 38,
+    maxWidth: 200,
     paddingHorizontal: 8,
     borderRadius: 5,
     borderColor: "#212121",
     borderWidth: 0.5,
-    backgroundColor: "#2f2f2f",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 8
+  },
+  rootActive: {
+    backgroundColor: "#2f2f2f",
   },
   indicator: {
     width: 10,

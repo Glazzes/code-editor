@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 import AceEditor from "react-ace";
+import IonIcons from '@expo/vector-icons/Ionicons';
+import Tabs from './Tabs';
 
-import {View, StyleSheet, useWindowDimensions} from 'react-native';
+import {TabContent} from './types/tabcontent';
+import {emitter} from './utils/eventlistener';
+import {View, StyleSheet, useWindowDimensions, Pressable} from 'react-native';
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-java";
@@ -13,36 +17,46 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-one_dark";
 import "ace-builds/src-noconflict/theme-xcode";
 
+import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
-import Tabs from './Tabs';
-import Tab from './Tab';
 
 type EditorProps = {};
 
 const Editor: React.FC<EditorProps> = ({}) => {
   const {width} = useWindowDimensions();
 
-  const [code, setCode] = useState<string[]>([]);
-  const onEditorTextChange = (content: string) => {
-    setCode(content.split("\n"));
+  const [tab, setTab] = useState<TabContent | undefined>(undefined);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+
+  const onEditorTextChange = (text: string) => {
+    setTab(t => {
+      if(t !== undefined) {
+        t.code = text.split("\n");
+      }
+
+      return t;
+    });
   }
+
+  useEffect(() => {
+    const sub = emitter.addListener("active-tab", setTab);
+    return () => sub.remove();
+  }, []);
 
   return (
     <View style={styles.root}>
-        <Tabs>
-            <Tab />
-            <Tab />
-        </Tabs>
+      <Tabs />
       <AceEditor
-        mode={"java"}
+        mode={tab?.language ?? "java"}
         theme={"one_dark"}
         tabSize={4}
+        value={tab?.code.join("\n") ?? ""}
         onChange={onEditorTextChange}
-        placeholder="Start coding!!!!"
+        placeholder="Let's write some awesome code!"
         focus={true}
         showPrintMargin={false}
-        style={{flex: 1, width}}
+        style={{flex: 1, width, paddingTop: 16, paddingBottom: 16}}
         setOptions={{
           enableLiveAutocompletion: true,
           enableBasicAutocompletion: true,
@@ -53,6 +67,11 @@ const Editor: React.FC<EditorProps> = ({}) => {
           wrap: true,
         }}
       />
+      <Pressable onPress={() => setIsRunning(true)} style={styles.run}>
+        {
+          isRunning ? null : <IonIcons name="play" color={"#fff"} size={24}  />
+        }
+      </Pressable>
     </View>
   );
 };
@@ -64,6 +83,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  run: {
+    height: 50,
+    width: 50,
+    borderRadius: 30,
+    backgroundColor: "#2c55fb",
+    justifyContent: "center",
+    alignItems: "center",
+    position: 'absolute',
+    top: 100,
+    right: 16,
+  }
 });
 
 export default Editor;

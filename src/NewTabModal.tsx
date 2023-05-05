@@ -15,6 +15,10 @@ const NewTabModal: React.FC<NewTabModalProps> = ({}) => {
   const [language, setLanguage] = useState<Language | undefined>();
 
   useEffect(() => {
+    if(name === "" || language == undefined) {
+      setIsDisabled(true);
+    }
+
     if(name != "" && language != undefined) {
       setIsDisabled(false);
     }
@@ -32,17 +36,27 @@ const NewTabModal: React.FC<NewTabModalProps> = ({}) => {
       />
       <Text style={styles.label}>Select a language</Text>
       <View style={styles.languages}>
-        { languages.map((lang, index) => {
+        { 
+          languages.map((lang, index) => {
             return <SelectionLanguage 
               key={`${lang}-${index}`} 
               language={lang}
               activeLanguage={language}
               setLanguage={setLanguage}
             />
-        }) }
+          }) 
+        }
       </View>
-      <Pressable style={styles.button}>
-        <Text style={styles.buttonText}>let's code</Text>
+      <Pressable style={[
+        styles.button,
+        isButtonDisabled ? styles.disabed : styles.enabled
+      ]}>
+        <Text style={[
+          styles.buttonText,
+          isButtonDisabled ? styles.buttonTextDisabed : styles.buttonTextEnable
+        ]}>
+          let's code
+        </Text>
       </Pressable>
     </View>
   );
@@ -83,15 +97,25 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 8,
-    backgroundColor: "#355ff0",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 16
   },
+  disabed: {
+    backgroundColor: "#f2f4f5"
+  },
+  enabled: {
+    backgroundColor: "#355ff0",
+  },
   buttonText: {
     padding: 16,
-    color: "#fff",
     fontFamily: "Medium"
+  },
+  buttonTextEnable: {
+    color: "#fff",
+  },
+  buttonTextDisabed: {
+    color: "#141414"
   }
 });
 
