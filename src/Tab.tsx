@@ -10,15 +10,13 @@ type TabProps = {
   index: number;
   tab: TabContent;
   activeTabId: string;
-  setActiveTab: Dispatch<SetStateAction<TabContent>>;
 };
 
-const Tab: React.FC<TabProps> = ({index, tab, activeTabId, setActiveTab}) => {
+const Tab: React.FC<TabProps> = ({index, tab, activeTabId}) => {
   const isActive = tab.id == activeTabId;
 
   const updateActiveTab = () => {
     if(activeTabId != tab.id) {
-      setActiveTab(tab);
       emitter.emit("active-tab", tab);
     }
   }
@@ -50,14 +48,14 @@ const styles = StyleSheet.create({
     maxWidth: 200,
     paddingHorizontal: 8,
     borderRadius: 5,
-    borderColor: "#212121",
-    borderWidth: 0.5,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 8
   },
   rootActive: {
+    borderWidth: 0.5,
+    borderColor: "#212121",
     backgroundColor: "#2f2f2f",
   },
   indicator: {

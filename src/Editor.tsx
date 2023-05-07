@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 
 import AceEditor from "react-ace";
-import IonIcons from '@expo/vector-icons/Ionicons';
 import Tabs from './Tabs';
 
 import {TabContent} from './types/tabcontent';
 import {emitter} from './utils/eventlistener';
 import {View, StyleSheet, useWindowDimensions, Pressable} from 'react-native';
+import {v4 as uuid} from 'uuid';
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-java";
@@ -23,35 +23,116 @@ import "ace-builds/src-noconflict/ext-beautify";
 
 type EditorProps = {};
 
+const startingTab: TabContent = {id: uuid(), name: "New tab", code: [], language: "Java"};
+
 const Editor: React.FC<EditorProps> = ({}) => {
   const {width} = useWindowDimensions();
 
-  const [tab, setTab] = useState<TabContent | undefined>(undefined);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [tabs, setTabs] = useState<TabContent[]>([]);
+  const [activeTab, setActiveTab] = useState<TabContent>(startingTab);
 
   const onEditorTextChange = (text: string) => {
-    setTab(t => {
+    setActiveTab(t => {
       if(t !== undefined) {
         t.code = text.split("\n");
       }
 
       return t;
     });
+
+    persistsTabs();
+  }
+
+  const persistsTabs = () => {
+    const tabsString = JSON.stringify(tabs);
+    const activeTabString = JSON.stringify(activeTab);
+
+    localStorage.setItem("tabs", tabsString);
+    localStorage.setItem("active-tab", activeTabString);
   }
 
   useEffect(() => {
-    const sub = emitter.addListener("active-tab", setTab);
-    return () => sub.remove();
+    const tabString = localStorage.getItem("tabs");
+    const activeTabString = localStorage.getItem("active-tab");
+    if(tabString && activeTabString) {
+      const tabs: TabContent[] = JSON.parse(tabString);
+      const activeTab: TabContent = JSON.parse(activeTabString);
+
+      setTabs(tabs);
+      setActiveTab(activeTab);
+    }else {
+      setTabs([startingTab]);
+      setActiveTab(startingTab);
+    }
+  }, [])
+
+  useEffect(() => {
+    const setActiveSubscription = emitter.addListener("active-tab", (tab: TabContent) => {
+      setActiveTab(tab);
+      localStorage.setItem("active-tab", JSON.stringify(tab));
+    });
+
+    const createNewTabSubscription = emitter.addListener("create-tab", (tab: TabContent) => {
+      setTabs(t => [...t, tab]);
+      setActiveTab(tab);
+
+      localStorage.setItem("active-tab", JSON.stringify(tab));
+    });
+
+    const displayResult = emitter.addListener("display-result", (result: string[]) => {
+      console.log(result);
+    })
+
+    return () => {
+      setActiveSubscription.remove();
+      createNewTabSubscription.remove();
+      displayResult.remove();
+    }
   }, []);
+
+  useEffect(() => {
+    const subscription = emitter.addListener("delete-tab", 
+    (tab: TabContent, index: number) => {
+      const isLastTab = index === tabs.length - 1;
+      const isActiveTab = activeTab?.id == tab.id
+      let newActiveTab;
+
+      if(index === 0 && tabs.length === 1) {
+        localStorage.clear();
+      }
+       
+      if(isLastTab && isActiveTab) {
+        newActiveTab = tabs[index - 1];
+        emitter.emit("active-tab", tabs[index - 1]);
+      }
+
+      if(!isLastTab && isActiveTab) {
+        newActiveTab = tabs[index + 1];
+        emitter.emit("active-tab", tabs[index + 1]);
+      }
+
+      if(newActiveTab) {
+        setActiveTab(newActiveTab);
+      }
+
+      setTabs((t) => t.filter((item) => item.id != tab.id));
+
+      return () => subscription.remove();
+    }, [tabs, activeTab]);
+
+    return () => {
+      subscription.remove();
+    }
+  }, [tabs, activeTab])
 
   return (
     <View style={styles.root}>
-      <Tabs />
+      <Tabs tabs={tabs} activeTab={activeTab} />
       <AceEditor
-        mode={tab?.language ?? "java"}
+        mode={activeTab?.language.toLocaleLowerCase() ?? "java"}
         theme={"one_dark"}
         tabSize={4}
-        value={tab?.code.join("\n") ?? ""}
+        value={activeTab?.code.join("\n") ?? ""}
         onChange={onEditorTextChange}
         placeholder="Let's write some awesome code!"
         focus={true}
@@ -67,11 +148,6 @@ const Editor: React.FC<EditorProps> = ({}) => {
           wrap: true,
         }}
       />
-      <Pressable onPress={() => setIsRunning(true)} style={styles.run}>
-        {
-          isRunning ? null : <IonIcons name="play" color={"#fff"} size={24}  />
-        }
-      </Pressable>
     </View>
   );
 };
@@ -82,17 +158,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  run: {
-    height: 50,
-    width: 50,
-    borderRadius: 30,
-    backgroundColor: "#2c55fb",
-    justifyContent: "center",
-    alignItems: "center",
-    position: 'absolute',
-    top: 100,
-    right: 16,
   }
 });
 

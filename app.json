@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "editor",
-    "slug": "editor",
+    "name": "Borealys Editor",
+    "slug": "Borealys Editor",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

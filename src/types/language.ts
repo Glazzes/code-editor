@@ -1,5 +1,5 @@
-export type Language = 'java' |
-  'javascript' |
-  'python' |
-  'bash' |
-  'go';
+export type Language = 'Java' |
+  'Javascript' |
+  'Python' |
+  'Bash' |
+  'Go';

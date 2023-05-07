@@ -6,7 +6,7 @@ import {Language} from './types/language';
 
 type NewTabModalProps = {};
 
-const languages: Language []= ["java", "javascript", "python", "go", "bash"];
+const languages: Language []= ["Java", "Javascript", "Python", "Go", "Bash"];
 
 const NewTabModal: React.FC<NewTabModalProps> = ({}) => {
   const [isButtonDisabled, setIsDisabled] = useState<boolean>(true);
