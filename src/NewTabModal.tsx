@@ -1,18 +1,35 @@
 import React, {useEffect, useState} from 'react';
 
-import {View, Text, StyleSheet, Pressable, TextInput, Image} from 'react-native';
 import SelectionLanguage from './SelectionLanguage';
+
+import {View, Text, StyleSheet, Pressable, TextInput} from 'react-native';
 import {Language} from './types/language';
+import {v4 as uuid} from 'uuid';
+import { TabContent } from './types/tabcontent';
+import { emitter } from './utils/eventlistener';
 
-type NewTabModalProps = {};
+const languages: Language []= ["Java", "Javascript", "Python", "Golang", "Bash"];
 
-const languages: Language []= ["Java", "Javascript", "Python", "Go", "Bash"];
-
-const NewTabModal: React.FC<NewTabModalProps> = ({}) => {
+const NewTabModal: React.FC = () => {
   const [isButtonDisabled, setIsDisabled] = useState<boolean>(true);
 
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<Language | undefined>();
+
+  const createNewTab = () => {
+    if(name === "" || language == undefined) {
+      return;
+    }
+
+    const newTab: TabContent = {
+      id: uuid(),
+      name,
+      code: [],
+      language: language ?? "Java"
+    }
+
+    emitter.emit("create-tab", newTab);
+  }
 
   useEffect(() => {
     if(name === "" || language == undefined) {
@@ -47,9 +64,11 @@ const NewTabModal: React.FC<NewTabModalProps> = ({}) => {
           }) 
         }
       </View>
-      <Pressable style={[
-        styles.button,
-        isButtonDisabled ? styles.disabed : styles.enabled
+      <Pressable
+        onPress={createNewTab} 
+        style={[
+          styles.button,
+          isButtonDisabled ? styles.disabed : styles.enabled
       ]}>
         <Text style={[
           styles.buttonText,

@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Editor from './src/Editor';
 import {useFonts} from 'expo-font';
 import NewTabModal from './src/NewTabModal';
+import RunningContext from './src/RunningContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -16,7 +17,9 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Editor />
+      <RunningContext>
+        <Editor />
+      </RunningContext>
     </View>
   );
 }

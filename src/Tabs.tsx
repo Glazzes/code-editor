@@ -1,47 +1,64 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 
 import Tab from './Tab';
 import IonIcons from '@expo/vector-icons/Ionicons';
+import Animated, {useSharedValue, useAnimatedStyle, useAnimatedReaction, measure} from 'react-native-reanimated';
 
-import {View, StyleSheet, Pressable, Text, ScrollView} from 'react-native';
+import {View, StyleSheet, Pressable, Text, useWindowDimensions} from 'react-native';
 import {emitter} from './utils/eventlistener';
-import {v4 as uuid} from 'uuid';
 import {TabContent} from './types/tabcontent';
+import {runningContext} from './RunningContext';
+import {useAnimatedRef} from 'react-native-reanimated';
 
 type TabsProps = {
   tabs: TabContent[];
   activeTab: TabContent;
 };
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [isRunning, setIsRunning] = useContext(runningContext);
 
-  const createNewTab = () => {
-    const newTab: TabContent = {
-      id: uuid(),
-      name: uuid(),
-      code: [],
-      language: "Java"
-    }
+  const {width} = useWindowDimensions();
+  const tabsWidth = useSharedValue<number>(0);
+  const plusRef = useAnimatedRef();
+  const runRef = useAnimatedRef();
 
-    emitter.emit("create-tab", newTab);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: tabsWidth.value,
+    };
+  });
+
+  useAnimatedReaction(
+    () => width,
+    (w) => {
+      const plusMeasure = measure(plusRef);
+      const runMeasure = measure(runRef);
+      if(plusMeasure && runMeasure) {
+        tabsWidth.value = w - plusMeasure.width - runMeasure.width - 32;
+      }
+    },
+    [width]
+  );
+
+  const showNewTablModal = () => {
+    emitter.emit("show-modal");
   }
 
   const runCode = async () => {
-    setIsRunning(true);
     if(!isRunning) {
       try{
-        fetch("http://localhost:5000/api/run", {
+        const data = await (await fetch("http://140.238.187.124:5000/api/run", {
           method: "POST", 
           body: JSON.stringify({language: activeTab.language, code: activeTab.code})
-        })
-        .then(res => res.json())
-        .then((data) => {
-          emitter.emit("display-result", data);
-        })
+        })).json()
+        
+        emitter.emit("display-data", data.Output);
       }catch(e) {
         console.error(e);
-      } finally {
+      }finally {
         setIsRunning(false);
       }
     }
@@ -63,33 +80,32 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
 
   return (
     <View style={styles.statusbar}>
-      <View style={styles.tabContainer}>
-      {
-          tabs.map((tab, index) => {
-            return <Tab 
-              key={`tab-${index}`} 
-              index={index}
-              tab={tab}
-              activeTabId={activeTab.id} 
-             />
-          })
-        }
-        <Pressable onPress={createNewTab} style={[styles.newTab]}>
+      <AnimatedPressable ref={plusRef} onPress={showNewTablModal} style={[styles.newTab]}>
           <IonIcons name='add' color={"#a9a9a9"} size={24} />
-        </Pressable>
-      </View>
-      
-      
-      <Pressable 
+        </AnimatedPressable>
+
+      <Animated.View style={[animatedStyle, styles.tabContainer]}>
+        
+          {
+            tabs.map((t, index) => {
+              return <Tab key={t.id} index={index} tab={t} activeTabId={activeTab.id} />
+            })
+          }
+        
+      </Animated.View>
+
+      <AnimatedPressable 
+        ref={runRef}
         onPress={() => {
+          runCode()
           setIsRunning(true);
-          runCode();
+          emitter.emit("display-tab")
         }}
         style={[styles.run, isRunning ? styles.runDisabled : styles.runEnabled]}
         >
         <IonIcons name={"play"} size={20} color={isRunning ? "#c4c4ca" : "#fff"} />
         <Text style={isRunning ? styles.runTextDisabled : styles.runText}>Run</Text>
-      </Pressable>
+      </AnimatedPressable>
     </View>
   );
 };
@@ -98,11 +114,10 @@ const styles = StyleSheet.create({
   statusbar: {
     width: "100%",
     height: 50,
-    paddingHorizontal: 16,
-    backgroundColor: "#141414",
+    paddingHorizontal: 8,
+    backgroundColor: "#181818",
     flexDirection: "row",
     alignItems: "center",
-    // justifyContent: "space-between",
     gap: 8
   },
   tabContainer: {

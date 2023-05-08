@@ -20,15 +20,18 @@
     "react-ace": "^10.1.0",
     "react-dom": "^18.2.0",
     "react-native": "0.71.7",
-    "react-native-web": "^0.19.4",
+    "react-native-reanimated": "~2.14.4",
+    "react-native-web": "^0.18.10",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/fbemitter": "^2.0.32",
     "@types/react": "~18.0.14",
+    "@types/uuid": "^9.0.1",
     "babel-plugin-react-native-web": "^0.19.4",
     "gh-pages": "^5.0.0",
+    "react-native-dotenv": "^3.4.8",
     "typescript": "^4.9.4"
   },
   "private": true

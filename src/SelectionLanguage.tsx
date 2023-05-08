@@ -18,7 +18,7 @@ const SelectionLanguage: React.FC<SelectionLanguageProps> = ({language, activeLa
     <Pressable onPress={() => setLanguage(language)}>
       <div className={isActive ? "" : "greyscale"} >
         <Image 
-          source={require(`../assets/images/${language}.png`)}
+          source={require(`../assets/images/${language?.toLocaleLowerCase()}.png`)}
           style={styles.image}
           resizeMode={"contain"}
         />
