@@ -1,10 +1,10 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React from 'react';
 
 import IonIcons from '@expo/vector-icons/Ionicons';
 
 import {View, Text, StyleSheet, Pressable} from 'react-native';
-import {emitter} from './utils/eventlistener';
-import {TabContent} from './types/tabcontent';
+import {emitter} from '../../utils/eventlistener';
+import {TabContent} from '../../types/tabcontent';
 
 type TabProps = {
   index: number;
@@ -45,7 +45,7 @@ const Tab: React.FC<TabProps> = ({index, tab, activeTabId}) => {
 const styles = StyleSheet.create({
   root: {
     height: 38,
-    maxWidth: 200,
+    width: 200,
     paddingHorizontal: 8,
     borderRadius: 5,
     flexDirection: "row",

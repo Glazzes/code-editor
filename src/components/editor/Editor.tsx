@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 
 import AceEditor from "react-ace";
-import Tabs from './Tabs';
-import NewTabModal from './NewTabModal';
 import RunResult from './RunResult';
 
-import {TabContent} from './types/tabcontent';
-import {emitter} from './utils/eventlistener';
+import {Tabs} from '../tabs';
+import {NewTabModal} from '../modal';
+import {TabContent} from '../../types/tabcontent';
+import {emitter} from '../../utils/eventlistener';
 import {View, StyleSheet, useWindowDimensions} from 'react-native';
 
 import "ace-builds/src-noconflict/mode-javascript";

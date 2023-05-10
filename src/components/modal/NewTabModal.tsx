@@ -3,10 +3,10 @@ import React, {useEffect, useState} from 'react';
 import SelectionLanguage from './SelectionLanguage';
 
 import {View, Text, StyleSheet, Pressable, TextInput} from 'react-native';
-import {Language} from './types/language';
+import {Language} from '../../types/language';
 import {v4 as uuid} from 'uuid';
-import { TabContent } from './types/tabcontent';
-import { emitter } from './utils/eventlistener';
+import { TabContent } from '../../types/tabcontent';
+import { emitter } from '../../utils/eventlistener';
 
 const languages: Language []= ["Java", "Javascript", "Python", "Golang", "Bash"];
 

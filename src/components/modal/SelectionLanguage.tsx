@@ -1,9 +1,9 @@
 import React, {Dispatch, SetStateAction} from 'react';
 
 import {StyleSheet, Image, Pressable} from 'react-native';
-import {Language} from './types/language';
+import {Language} from '../../types/language';
 
-import '../assets/css/utils.css';
+import '../../../assets/css/utils.css';
 
 type SelectionLanguageProps = {
   language: Language | undefined;
@@ -18,7 +18,7 @@ const SelectionLanguage: React.FC<SelectionLanguageProps> = ({language, activeLa
     <Pressable onPress={() => setLanguage(language)}>
       <div className={isActive ? "" : "greyscale"} >
         <Image 
-          source={require(`../assets/images/${language?.toLocaleLowerCase()}.png`)}
+          source={require(`../../../assets/images/${language?.toLocaleLowerCase()}.png`)}
           style={styles.image}
           resizeMode={"contain"}
         />

@@ -1,13 +1,19 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 
 import Tab from './Tab';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import Animated, {useSharedValue, useAnimatedStyle, useAnimatedReaction, measure} from 'react-native-reanimated';
+import Animated, {
+  useSharedValue, 
+  useAnimatedStyle, 
+  useAnimatedReaction,
+  measure,
+  scrollTo
+} from 'react-native-reanimated';
 
-import {View, StyleSheet, Pressable, Text, useWindowDimensions} from 'react-native';
-import {emitter} from './utils/eventlistener';
-import {TabContent} from './types/tabcontent';
-import {runningContext} from './RunningContext';
+import {View, StyleSheet, Pressable, Text, useWindowDimensions, ScrollView} from 'react-native';
+import {emitter} from '../../utils/eventlistener';
+import {TabContent} from '../../types/tabcontent';
+import {runningContext} from '../editor/RunningContext';
 import {useAnimatedRef} from 'react-native-reanimated';
 
 type TabsProps = {
@@ -19,9 +25,14 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
   const [isRunning, setIsRunning] = useContext(runningContext);
+  const [showRight, setShowRight] = useState<boolean>(false);
+  const [showLeft, setShowLeft] = useState<boolean>(false);
 
   const {width} = useWindowDimensions();
+
+  const scroll = useSharedValue<number>(0);
   const tabsWidth = useSharedValue<number>(0);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const plusRef = useAnimatedRef();
   const runRef = useAnimatedRef();
 
@@ -37,7 +48,7 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
       const plusMeasure = measure(plusRef);
       const runMeasure = measure(runRef);
       if(plusMeasure && runMeasure) {
-        tabsWidth.value = w - plusMeasure.width - runMeasure.width - 32;
+        tabsWidth.value = w - plusMeasure.width - runMeasure.width - 56;
       }
     },
     [width]
@@ -85,13 +96,18 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
         </AnimatedPressable>
 
       <Animated.View style={[animatedStyle, styles.tabContainer]}>
-        
-          {
-            tabs.map((t, index) => {
-              return <Tab key={t.id} index={index} tab={t} activeTabId={activeTab.id} />
-            })
-          }
-        
+          <Animated.ScrollView 
+            ref={scrollRef}
+            horizontal={true} 
+            showsHorizontalScrollIndicator={false}
+          >
+            {
+              tabs.map((t, index) => {
+                return <Tab key={t.id} index={index} tab={t} activeTabId={activeTab.id} />
+              })
+            }
+            <View style={{height: 30, width: 30, backgroundColor: "lime", position: 'absolute', left: 0}} />
+          </Animated.ScrollView>
       </Animated.View>
 
       <AnimatedPressable 
@@ -124,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     gap: 8,
-    overflow: "scroll"
+    overflow: "hidden"
   },
   newTab: {
     height: 38,

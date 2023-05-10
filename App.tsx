@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Editor from './src/Editor';
+import {Editor} from './src/components/editor';
 import {useFonts} from 'expo-font';
-import NewTabModal from './src/NewTabModal';
-import RunningContext from './src/RunningContext';
+import RunningContext from './src/components/editor/RunningContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
