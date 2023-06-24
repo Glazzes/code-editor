@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 
-import {theme} from '../data/theme';
-
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import Logo from './Logo';
 import HStack from './HStack';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { animationDuration, modalBezierIn } from '../data/animations';
+
+import {animationDuration, modalBezierIn } from '../data/animations';
+import {TabContent} from '../types/tabcontent';
+import {theme} from '../data/theme';
+import {v4 as uuid} from 'uuid';
+import { Language } from '../types/language';
+import { emitNewTabEvent } from '../lib/emitter';
 
 type NewTabModalProps = {
   onClose: () => void;
@@ -27,7 +31,15 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
 
   const onSubmit = (e: React.FormEvent<HTMLElement>) => {
     e.preventDefault();
-    console.log(tabName, language);
+    const newTab: TabContent = {
+      id: uuid(),
+      name: tabName,
+      language: (language as Language),
+      code: []
+    }
+
+    emitNewTabEvent(newTab);
+    exiting();
   }
 
   // Animations
@@ -89,11 +101,11 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
             style={styles.select} required={true}
         >
             <option value="">-- Selecciona un lenguage --</option>
-            <option value="bash" style={styles.option}>Bash</option>
-            <option value="go" style={styles.option}>Go</option>
-            <option value="java" style={styles.option}>Java</option>
-            <option value="javascript" style={styles.option}>JavaScript</option>
-            <option value="python" style={styles.option}>Python</option>
+            <option value="Bash" style={styles.option}>Bash</option>
+            <option value="Golang" style={styles.option}>Go</option>
+            <option value="Java" style={styles.option}>Java</option>
+            <option value="Javascript" style={styles.option}>JavaScript</option>
+            <option value="Python" style={styles.option}>Python</option>
         </select>
 
         <button type={"submit"} style={styles.button}>Crear pestaña</button>
@@ -108,12 +120,6 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
     </Animated.View>
   );
 };
-
-const formStyles = {
-    display: "flex",
-    flexDirection: "row",
-    gap: theme.spacing.s4
-}
 
 const styles = StyleSheet.create({
   root: {
@@ -160,6 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.spacing.s2,
     borderWidth: 2,
     borderColor: theme.colors.modal.inputTextBorderColor,
+    outlineStyle: "none"
   },
   option: {
     height: theme.sizes.touchableHeight,

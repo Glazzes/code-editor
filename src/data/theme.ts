@@ -55,7 +55,7 @@ export const theme: Theme = {
         regular: "Regular"
     },
     sizes: {
-        touchableHeight: 44,
+        touchableHeight: 40,
         iconSize: 20,
         titleSize: 40
     },
@@ -67,12 +67,12 @@ export const theme: Theme = {
             textColor: "#111727",
             infoBacgroundColor: "#eef9fd",
             infoTextColor: "#193c47",
-            warningBackgroundColor: "",
-            warningTextColor: "",
+            warningBackgroundColor: "#fff8e6",
+            warningTextColor: "#4d3800",
         },
         editor: {
             text: "#000312",
-            border: "#f3f3f3",
+            border: "#e8e8e8",
             run: "#111727"
         },
         sidebar: {

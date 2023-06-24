@@ -16,6 +16,14 @@ const GetStarted: React.FC = () => {
           </Text>
         </View>
 
+        <View style={styles.warning}>
+          <Text style={styles.warningText}>
+            Todo tu codigo se ejecuta en completa isolacion, eso quiere decir que tener varias pestañas
+            con el mismo lenguaje de programcion no significa que dichos archivos puedan importar codigo
+            entere ellos.
+          </Text>
+        </View>
+
         <Text style={styles.text}>
           ¡Bienvenido a Borealis! Borealis es un campo de juego (Playground) donde los desarrolladores pueden 
           probar sus archivos de codigo y/o funciones en cinco lenguages de programacion diferentes 
@@ -84,6 +92,15 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.regular,
     color: theme.colors.getStarted.infoTextColor
   },
+  warning: {
+    backgroundColor: theme.colors.getStarted.warningBackgroundColor,
+    padding: theme.spacing.s4,
+    borderRadius: theme.spacing.s2
+  },
+  warningText: {
+    fontFamily: theme.fonts.regular,
+    color: theme.colors.getStarted.warningTextColor
+  },
   text: {
     fontFamily: theme.fonts.regular,
     color: theme.colors.getStarted.textColor,
@@ -94,7 +111,8 @@ const styles = StyleSheet.create({
   },
   keyboardShortcutsTitle: {
     fontFamily: theme.fonts.bold,
-    fontSize: 20
+    fontSize: 20,
+    color: theme.colors.getStarted.textColor
   },
   chipContainer: {
     fontFamily: theme.fonts.medium,

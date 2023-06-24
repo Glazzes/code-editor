@@ -1,37 +1,52 @@
 import React, { useState } from 'react';
-import {View, Text, StyleSheet, useWindowDimensions, TextInput} from 'react-native';
-import IonIcon from '@expo/vector-icons/Ionicons';
+import {View, Text, StyleSheet, useWindowDimensions, TextInput, FlatList, ListRenderItemInfo} from 'react-native';
 
-import { theme } from '../../data/theme';
+import IonIcon from '@expo/vector-icons/Ionicons';
 import Logo from '../Logo';
 import User from '../User';
-import { ToolTipContainer } from '../../layouts';
 
-const SideBar: React.FC = ({}) => {
+import {TabContent} from '../../types/tabcontent';
+import {theme} from '../../data/theme';
+import {ToolTipContainer} from '../../layouts';
+
+type SideBarProps = {
+  tabs: TabContent[];
+}
+
+function keyExtractor(item: TabContent, index: number): string {
+  return `${item.id}-${index}`;
+}
+
+function renderItem(info: ListRenderItemInfo<TabContent>): React.ReactElement {
+  return <div style={{fontFamily: theme.fonts.bold, color: "#fff"}}>{info.item.name}</div>
+}
+
+const SideBar: React.FC<SideBarProps> = ({tabs}) => {
   const {height} = useWindowDimensions();
   const sideBarHeight = height - theme.spacing.s2 * 2;
-
-  const [showNewTabShortcut, setShowNewTabShortcut] = useState<boolean>(false);
-
-  const onMouseEnter = () => setShowNewTabShortcut(true);
-  const onMouseLeave = () => setShowNewTabShortcut(false);
 
   return (
     <View style={[styles.sidebar, {height: sideBarHeight}]}>
       <View style={styles.hstack}>
         <Logo dark={false} />
         <View style={styles.searchBoxContainer}>
-            <IonIcon name={"ios-search"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
-            <TextInput style={styles.searchBox} placeholder={"Search"} />
+          <IonIcon name={"ios-search"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
+          <TextInput style={styles.searchBox} placeholder={"Search"} />
         </View>
 
         <ToolTipContainer content={"ctrl + a"}>
-            <View style={styles.container}>
-                <IonIcon name={"ios-add"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
-                <Text style={styles.text}>Nueva pestaña</Text>
-            </View>
+          <View style={styles.container}>
+            <IonIcon name={"ios-add"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
+            <Text style={styles.text}>Nueva pestaña</Text>
+          </View>
         </ToolTipContainer>
       </View>
+
+      <FlatList 
+        data={tabs}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+      />
 
       <User />
     </View>

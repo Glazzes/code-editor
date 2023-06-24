@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {useFonts} from 'expo-font';
-import RunningContext from './src/components/editor/RunningContext';
-import Timer from './src/components/Timer';
 import SideBar from './src/components/editor/SideBar';
 import Editor from './src/features/Editor';
-import GetStarted from './src/components/GetStarted';
-import { theme } from './src/data/theme';
-import { DarkOpacityOverlay } from './src/layouts';
+import {theme} from './src/data/theme';
+import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
+import GetStarted from './src/components/GetStarted';
+import {TabContent} from './src/types/tabcontent';
+import { addNewTabEventListener } from './src/lib/emitter';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -18,16 +18,16 @@ export default function App() {
     "Regular": require("./assets/fonts/Inter-Regular.ttf")
   });
 
+  const [activeTab, setActiveTab] = useState<TabContent>();
+  const [tabs, setTabs] = useState<TabContent[]>([]);
   const [showNewTabModal, setShowNewTabModal] = useState<boolean>(false);
 
   const openModal = () => setShowNewTabModal(true);
   const closeModal = () => setShowNewTabModal(false);
 
-  const onShortcut = (e: KeyboardEvent) => {
+  const onControlKeyShortcut = (e: KeyboardEvent) => {
     if(e.ctrlKey) {
-      if(e.key === "a") {
-        openModal();
-      }
+      if(e.key === "a") openModal();
   
       if(e.key === "k") {
         console.log("close active tab");
@@ -45,11 +45,16 @@ export default function App() {
         console.log("go to history");
       }
     }
+  }
 
+  const onAltKeyShortcut = (e: KeyboardEvent) => {
     if(e.altKey && "1234567890".indexOf(e.key) != -1) {
-      console.log(`Go to tab ${e.key}`);
+      const index = parseInt(e.key, 10) - 1;
+      const tab = tabs[index];
+      if(tab) {
+        setActiveTab(tab);
+      }
     }
-    
   }
 
   const ignoreShortcuts = (e: KeyboardEvent) => {
@@ -65,14 +70,34 @@ export default function App() {
   }
 
   useEffect(() => {
-    window.addEventListener("keyup", onShortcut);
+    window.addEventListener("keyup", onAltKeyShortcut);
+    return () => {
+      window.removeEventListener("keyup", onAltKeyShortcut);
+    }
+  }, [tabs]);
+
+  useEffect(() => {
+    window.addEventListener("keyup", onControlKeyShortcut);
     window.addEventListener("keydown", ignoreShortcuts);
 
     return () => {
       window.removeEventListener("keydown", ignoreShortcuts);
-      window.removeEventListener("keyup", onShortcut);
+      window.removeEventListener("keyup", onControlKeyShortcut);
+    }
+  }, []);
+
+  useEffect(() => {
+    const newTabSub = addNewTabEventListener(newTab => {
+      setTabs(t => [...t, newTab]);
+      setActiveTab(newTab);
+    });
+
+    return () => {
+      newTabSub.remove();
     }
   }, [])
+
+  useEffect(() => console.log(activeTab), [activeTab]);
 
   if(!fontsLoaded) {
     return null;
@@ -80,8 +105,13 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <SideBar />
-      <Editor />
+      <SideBar tabs={tabs} />
+      { activeTab ? (
+          <Editor tab={activeTab} />
+        ) : (
+          <GetStarted />
+        )
+      }
 
       {
         showNewTabModal ? (
