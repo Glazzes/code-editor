@@ -24,7 +24,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs, activeTabId}) => {
   const {height} = useWindowDimensions();
   const sideBarHeight = height - theme.spacing.s2 * 2;
 
-  const [searchTerm, setSearchTerm] = useState<string>("ina");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredTabs, setFilteredTabs] = useState<TabContent[]>(tabs);
 
   const onSearchTermChange = (text: string) => {

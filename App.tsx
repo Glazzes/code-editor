@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useFonts} from 'expo-font';
 import SideBar from './src/components/editor/SideBar';
-import Editor from './src/features/Editor';
 import {theme} from './src/data/theme';
 import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
@@ -10,6 +9,8 @@ import GetStarted from './src/components/GetStarted';
 import {TabContent} from './src/types/tabcontent';
 import {addNewTabEventListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
 import { findTextSearchMatches } from './src/utils/findSearchMatches';
+import { Editor } from './src/components/editor';
+import RunningContext from './src/components/editor/RunningContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -19,8 +20,8 @@ export default function App() {
     "Regular": require("./assets/fonts/Inter-Regular.ttf")
   });
 
-  const [activeTab, setActiveTab] = useState<TabContent>();
-  const [tabs, setTabs] = useState<TabContent[]>([]);
+  const [activeTab, setActiveTab] = useState<TabContent>({name: "Java", language: "Java", id: "1", code: ""});
+  const [tabs, setTabs] = useState<TabContent[]>([{name: "Java", language: "Java", id: "1", code: ""}]);
   const [showNewTabModal, setShowNewTabModal] = useState<boolean>(false);
 
   const openModal = () => setShowNewTabModal(true);
@@ -137,21 +138,9 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <SideBar tabs={tabs} activeTabId={activeTab?.id} />
-      { activeTab ? (
-          <Editor activeTab={activeTab} setActiveTab={setActiveTab} />
-        ) : (
-          <GetStarted />
-        )
-      }
-
-      {
-        showNewTabModal ? (
-          <DarkOpacityOverlay>
-            <NewTabModal onClose={closeModal} />
-          </DarkOpacityOverlay>
-        ) : null
-      }
+      <RunningContext>
+        <Editor />
+      </RunningContext>
     </View>
   );
 }
@@ -159,7 +148,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.s2,
     flexDirection: "row",
     justifyContent: 'center',
   },

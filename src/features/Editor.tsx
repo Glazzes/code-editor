@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 
 import AceEditor from "react-ace";
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import HStack from '../components/HStack';
 
@@ -29,6 +29,8 @@ import "ace-builds/src-noconflict/ext-error_marker";
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
+import { PressableOpacity } from '../components';
+import { animationDuration } from '../data/animations';
 
 type EditorProps = {
   activeTab: TabContent;
@@ -39,6 +41,9 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
   const selectRef = useRef<HTMLSelectElement>(null);
+  const editorContainerRef = useRef<View>(null);
+
+  const translateY = useSharedValue<number>(0);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveTimeout, setSaveTimeout] = useState<number>();
@@ -59,6 +64,18 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
       emitUpdateTabNameEvent(activeTab.id, content);
     }
   }
+
+  const openConsole = () => {
+    editorContainerRef.current?.measure((x, y, w, h) => {
+      translateY.value = withTiming((-1 * h) / 2, {duration: animationDuration});
+    });
+  }
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{translateY: translateY.value}]
+    };
+  });
 
   const onCodeChange = (content: string) => {
     setIsSaving(true);
@@ -164,13 +181,13 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
         </HStack>
       </HStack>
       
-      <View style={styles.editorContainer}>
+      <View style={styles.editorContainer} ref={editorContainerRef}>
         <AceEditor
             value={activeTab.code}
             onChange={onCodeChange}
             mode={activeTab.language.toLocaleLowerCase()}
             theme={"xcode"}
-            fontSize={16}
+            fontSize={17}
             tabSize={4}
             focus={true}
             showPrintMargin={true}
@@ -185,26 +202,34 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
               wrap: true,
             }}
           />
+
+          <Animated.View style={[styles.console, animatedStyle]}>
+
+          </Animated.View>
       </View>
 
-      <HStack>
-        <IonIcon name={"ios-information-outline"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
-        <IonIcon name={"ios-terminal-outline"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
-        <IonIcon name={"ios-reload"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
+      <View style={styles.sencodaryInfoContainer}>
+        <HStack>
+          <IonIcon name={"ios-information-outline"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
+          <PressableOpacity onPress={openConsole}>
+            <IonIcon name={"ios-terminal-outline"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
+          </PressableOpacity>
+          <IonIcon name={"ios-reload"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
 
-        <select 
-          ref={selectRef} 
-          defaultValue={activeTab.language} 
-          onChange={onLanguageChange}
-          style={styles.select}
-        >
-          <option value="Bash">Bash</option>
-          <option value="Golang">Go</option>
-          <option value="Java">Java</option>
-          <option value="Javascript">JavaScript</option>
-          <option value="Python">Python</option>
-        </select>
-      </HStack>
+          <select 
+            ref={selectRef} 
+            defaultValue={activeTab.language} 
+            onChange={onLanguageChange}
+            style={styles.select}
+          >
+            <option value="Bash">Bash</option>
+            <option value="Golang">Go</option>
+            <option value="Java">Java</option>
+            <option value="Javascript">JavaScript</option>
+            <option value="Python">Python</option>
+          </select>
+        </HStack>
+      </View>
     </View>
   );
 };
@@ -220,7 +245,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bold,
     fontSize: 30,
     borderRadius: theme.spacing.s2,
-    textTransform: "capitalize"
   },
   chipContainer: {
     flexDirection: "row",
@@ -249,7 +273,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.spacing.s2,
     justifyContent: "center",
     alignItems: "center",
-    
   },
   runButton: {
     backgroundColor: theme.colors.generic.buttonBackgroundColor,
@@ -265,6 +288,25 @@ const styles = StyleSheet.create({
   importButtonText: {
     fontFamily: theme.fonts.regular,
     color: theme.colors.getStarted.textColor,
+  },
+  console: {
+      width: "100%",
+      height: "50%",
+      shadowColor: "rgba(0, 0, 0, 0.3)",
+      shadowRadius: 40,
+      shadowOpacity: 0.15,
+      shadowOffset: {height: -5, width: 0},
+      backgroundColor: "#fff",
+      borderRadius: theme.spacing.s4,
+      position: "absolute",
+      top: "100%",
+      zIndex: 999
+  },
+  sencodaryInfoContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end"
   },
   select: {
     height: theme.sizes.touchableHeight,

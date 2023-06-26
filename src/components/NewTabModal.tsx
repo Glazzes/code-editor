@@ -91,6 +91,7 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
               type={"text"} 
               placeholder={"LinkedList.java"} 
               style={styles.textInput}
+              autoFocus={true}
               required={true}
             />
         </View>

@@ -14,7 +14,7 @@ const GetStarted: React.FC = () => {
           </Text>
         </View>
 
-        <h1 style={styles.title}>Comencemos</h1>
+        <h1 style={styles.title}>Comencemos (Proyecto en desarrollo)</h1>
 
         <Text style={styles.text}>
           ¡Bienvenido a Borealis! Borealis es un campo de juego (Playground) donde los desarrolladores pueden 

@@ -27,14 +27,16 @@ const Tab: React.FC<TabProps> = ({index, tab, activeTabId}) => {
 
   return (
     <Pressable onPress={updateActiveTab} style={[styles.root, isActive ? styles.rootActive : null]}>
-      <View style={[styles.indicator, isActive ? styles.active : styles.incative ]} />
-      <Text 
-        style={styles.text}
-        numberOfLines={1}
-        ellipsizeMode={"tail"}
-      >
-        {tab.name}
+      <View style={styles.nameContainer}>
+        <View style={[styles.indicator, isActive ? styles.active : styles.incative ]} />
+        <Text 
+          style={styles.text}
+          numberOfLines={1}
+          ellipsizeMode={"tail"}
+        >
+          {tab.name}
         </Text>
+      </View>
       <Pressable onPress={sendDeleteTabEvent}>
         <IonIcons name="close" size={16} color={"#f2f4f5"} />
       </Pressable>
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 5,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     gap: 8
   },
@@ -57,6 +59,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#212121",
     backgroundColor: "#2f2f2f",
+  },
+  nameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
   indicator: {
     width: 10,

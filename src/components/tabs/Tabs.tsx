@@ -98,7 +98,7 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
       <Animated.View style={[animatedStyle, styles.tabContainer]}>
           <Animated.ScrollView 
             ref={scrollRef}
-            horizontal={true} 
+            horizontal={true}
             showsHorizontalScrollIndicator={false}
           >
             {
@@ -106,7 +106,7 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
                 return <Tab key={t.id} index={index} tab={t} activeTabId={activeTab.id} />
               })
             }
-            <View style={{height: 30, width: 30, backgroundColor: "lime", position: 'absolute', left: 0}} />
+            
           </Animated.ScrollView>
       </Animated.View>
 
