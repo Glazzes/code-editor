@@ -1,29 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {View, Text, StyleSheet, useWindowDimensions, TextInput, FlatList, ListRenderItemInfo} from 'react-native';
 
 import IonIcon from '@expo/vector-icons/Ionicons';
 import Logo from '../Logo';
 import User from '../User';
+import SideBarTab from '../SideBarTab';
+import {ToolTipContainer} from '../../layouts';
 
 import {TabContent} from '../../types/tabcontent';
+
 import {theme} from '../../data/theme';
-import {ToolTipContainer} from '../../layouts';
 
 type SideBarProps = {
   tabs: TabContent[];
+  activeTabId?: string;
 }
 
 function keyExtractor(item: TabContent, index: number): string {
   return `${item.id}-${index}`;
 }
 
-function renderItem(info: ListRenderItemInfo<TabContent>): React.ReactElement {
-  return <div style={{fontFamily: theme.fonts.bold, color: "#fff"}}>{info.item.name}</div>
-}
-
-const SideBar: React.FC<SideBarProps> = ({tabs}) => {
+const SideBar: React.FC<SideBarProps> = ({tabs, activeTabId}) => {
   const {height} = useWindowDimensions();
   const sideBarHeight = height - theme.spacing.s2 * 2;
+
+  const [searchTerm, setSearchTerm] = useState<string>("ina");
+  const [filteredTabs, setFilteredTabs] = useState<TabContent[]>(tabs);
+
+  const onSearchTermChange = (text: string) => {
+    setSearchTerm(text);
+  }
+
+  const renderItem = (info: ListRenderItemInfo<TabContent>): React.ReactElement => {
+    return <SideBarTab tab={info.item} activeTabId={activeTabId} searchTerm={searchTerm} />
+  }
+
+  useEffect(() => {
+    setFilteredTabs(tabs);
+  }, [tabs])
 
   return (
     <View style={[styles.sidebar, {height: sideBarHeight}]}>
@@ -31,7 +45,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
         <Logo dark={false} />
         <View style={styles.searchBoxContainer}>
           <IonIcon name={"ios-search"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
-          <TextInput style={styles.searchBox} placeholder={"Search"} />
+          <TextInput style={styles.searchBox} onChangeText={onSearchTermChange} placeholder={"Busca un pestaña"} />
         </View>
 
         <ToolTipContainer content={"ctrl + a"}>
@@ -43,7 +57,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
       </View>
 
       <FlatList 
-        data={tabs}
+        data={filteredTabs}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
       />

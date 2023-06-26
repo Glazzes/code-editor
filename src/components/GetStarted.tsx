@@ -6,8 +6,6 @@ const GetStarted: React.FC = () => {
   return (
     <ScrollView style={styles.root}>
       <View style={styles.mainInfoContainer}>
-        <h1 style={styles.title}>Comencemos</h1>
-
         <View style={styles.information}>
           <Text style={styles.informationText}>
             ¿Eres un reclutador? ¿Alguien sin experiencia tecnica? o simplemente no sabes que hacer en este
@@ -16,13 +14,7 @@ const GetStarted: React.FC = () => {
           </Text>
         </View>
 
-        <View style={styles.warning}>
-          <Text style={styles.warningText}>
-            Todo tu codigo se ejecuta en completa isolacion, eso quiere decir que tener varias pestañas
-            con el mismo lenguaje de programcion no significa que dichos archivos puedan importar codigo
-            entere ellos.
-          </Text>
-        </View>
+        <h1 style={styles.title}>Comencemos</h1>
 
         <Text style={styles.text}>
           ¡Bienvenido a Borealis! Borealis es un campo de juego (Playground) donde los desarrolladores pueden 
@@ -30,6 +22,14 @@ const GetStarted: React.FC = () => {
           entre los que se encuentran Bash, Go, Java, JavaScript y Python, cabe resaltar que la inclusion de 
           nuevos lenguages de programacion es una tarea simple de implementar.
         </Text>
+
+        <View style={styles.warning}>
+          <Text style={styles.warningText}>
+            Todo tu codigo se ejecuta en completa isolacion, eso quiere decir que tener varias pestañas
+            con el mismo lenguaje de programcion no significa que dichos archivos puedan importar codigo
+            entere ellos.
+          </Text>
+        </View>
       </View>
 
       <h3 style={styles.keyboardShortcutsTitle}>Atajos de teclado</h3>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
-    fontSize: 40,
+    fontSize: theme.sizes.titleSize,
     color: theme.colors.getStarted.textColor,
     marginTop: 0,
     marginBottom: 0

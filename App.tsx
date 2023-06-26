@@ -8,7 +8,8 @@ import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
 import GetStarted from './src/components/GetStarted';
 import {TabContent} from './src/types/tabcontent';
-import { addNewTabEventListener } from './src/lib/emitter';
+import {addNewTabEventListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
+import { findTextSearchMatches } from './src/utils/findSearchMatches';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -34,7 +35,8 @@ export default function App() {
       }
   
       if(e.key === "q") {
-        console.log("close all tabs");
+        setTabs([]);
+        setActiveTab(undefined);
       }
 
       if(e.key === "r") {
@@ -52,7 +54,13 @@ export default function App() {
       const index = parseInt(e.key, 10) - 1;
       const tab = tabs[index];
       if(tab) {
+        const newTabs = tabs.map(t => {
+          if(t.id === activeTab?.id) return activeTab;
+          return t;
+        });
+
         setActiveTab(tab);
+        setTabs(newTabs);
       }
     }
   }
@@ -70,11 +78,17 @@ export default function App() {
   }
 
   useEffect(() => {
-    window.addEventListener("keyup", onAltKeyShortcut);
+    const updateTabNameSub = registerUpdateActiveTabNameListener((tabId, name) => {
+      setTabs(tbs => tbs.map(t => {
+        if(t.id === tabId) return {...t, name}
+        return t;
+      }));
+    });
+
     return () => {
-      window.removeEventListener("keyup", onAltKeyShortcut);
+      updateTabNameSub.remove();
     }
-  }, [tabs]);
+  }, [])
 
   useEffect(() => {
     window.addEventListener("keyup", onControlKeyShortcut);
@@ -87,17 +101,35 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    window.addEventListener("keyup", onAltKeyShortcut);
+    return () => {
+      window.removeEventListener("keyup", onAltKeyShortcut);
+    }
+  }, [tabs, activeTab]);
+
+  useEffect(() => {
     const newTabSub = addNewTabEventListener(newTab => {
-      setTabs(t => [...t, newTab]);
       setActiveTab(newTab);
+      setTabs(tbs => {
+        const newTabs = tbs.map(t => {
+          if(t.id === activeTab?.id) return activeTab;
+          return t;
+        });
+
+        return [...newTabs, newTab];
+      });
     });
 
     return () => {
       newTabSub.remove();
     }
-  }, [])
+  }, [activeTab]);
 
-  useEffect(() => console.log(activeTab), [activeTab]);
+  useEffect(() => {
+    const t = findTextSearchMatches("Binary Search Java", "");
+
+    console.log(t);
+  }, [])
 
   if(!fontsLoaded) {
     return null;
@@ -105,9 +137,9 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <SideBar tabs={tabs} />
+      <SideBar tabs={tabs} activeTabId={activeTab?.id} />
       { activeTab ? (
-          <Editor tab={activeTab} />
+          <Editor activeTab={activeTab} setActiveTab={setActiveTab} />
         ) : (
           <GetStarted />
         )

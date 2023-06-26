@@ -4,5 +4,5 @@ export type TabContent = {
   id: string;
   name: string;
   language: Language
-  code: string[],
+  code: string,
 }

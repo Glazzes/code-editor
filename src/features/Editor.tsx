@@ -7,6 +7,8 @@ import IonIcon from '@expo/vector-icons/Ionicons';
 import HStack from '../components/HStack';
 
 import {calculateTextWidth} from '../utils/calculateTextWidth';
+import {emitUpdateTabNameEvent} from '../lib/emitter';
+import {Language} from '../types/language';
 import {theme} from '../data/theme';
 import {TabContent} from '../types/tabcontent';
 
@@ -15,36 +17,36 @@ import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-golang";
+
 import "ace-builds/src-noconflict/theme-xcode";
+
+import "ace-builds/src-noconflict/snippets/java";
+import "ace-builds/src-noconflict/snippets/javascript";
+import "ace-builds/src-noconflict/snippets/python";
+import "ace-builds/src-noconflict/snippets/golang";
+
 import "ace-builds/src-noconflict/ext-error_marker";
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
 
 type EditorProps = {
-  tab: TabContent;
+  activeTab: TabContent;
+  setActiveTab: React.Dispatch<React.SetStateAction<TabContent>>;
 }
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-const Editor: React.FC<EditorProps> = ({tab}) => {
+const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
   const selectRef = useRef<HTMLSelectElement>(null);
 
-  const [name, setName] = useState<string>(tab.name);
-  const [isSaved, setIsSaved] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveTimeout, setSaveTimeout] = useState<number>();
-
-  const onCodeChange = (content: string) => {
-    setIsSaved(false);
-    const code = content.split("\n");
-
-    assignSaveTimeout();
-  }
 
   const onTabNameTitleChange = (content: string) => {
     if(content !== "") {
-      setIsSaved(false);
-      setName(content);
+      setIsSaving(false);
+      setActiveTab(prev => ({...prev, name: content}));
       assignSaveTimeout();
 
       const textWidth = calculateTextWidth({
@@ -54,15 +56,27 @@ const Editor: React.FC<EditorProps> = ({tab}) => {
       });
 
       inputWidth.value = textWidth;
+      emitUpdateTabNameEvent(activeTab.id, content);
     }
+  }
+
+  const onCodeChange = (content: string) => {
+    setIsSaving(true);
+    setActiveTab(prev => ({...prev, code: content}));
+    assignSaveTimeout();
+  }
+
+  const onLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as Language;
+    setActiveTab(prev => ({...prev, language: value}));
   }
 
   const assignSaveTimeout = () => {
     if(saveTimeout) clearTimeout(saveTimeout);
 
     const newSaveInterval = setTimeout(() => {
-      setIsSaved(true);
-    }, 2000);
+      setIsSaving(false);
+    }, 1200);
 
     setSaveTimeout(newSaveInterval);
   }
@@ -87,7 +101,7 @@ const Editor: React.FC<EditorProps> = ({tab}) => {
 
   useEffect(() => {
     const textWidth = calculateTextWidth({
-      text: name,
+      text: activeTab.name,
       font: theme.fonts.bold,
       sizePx: 30
     });
@@ -96,40 +110,47 @@ const Editor: React.FC<EditorProps> = ({tab}) => {
   }, []);
 
   useEffect(() => {
-    setName(tab.name);
-
     if(selectRef.current) {
-      selectRef.current.value = tab.language;
+      selectRef.current.value = activeTab.language;
     }
 
     const textWidth = calculateTextWidth({
-      text: tab.name,
+      text: activeTab.name,
       font: theme.fonts.bold,
       sizePx: 30
     });
-
     inputWidth.value = textWidth;
-  }, [tab])
+  }, [activeTab]);
 
   return (
     <View style={styles.root}>
       <HStack justifyContent={"space-between"}>
         <HStack>
           <AnimatedTextInput 
-            style={[styles.textInput, rStyle]} 
-            value={name} 
+            style={[styles.textInput, rStyle]}
+            value={activeTab.name}
             onChangeText={onTabNameTitleChange}
             autoFocus={false}
             spellCheck={false}
           />
-          {
-            isSaved ? (
-              <View style={styles.chipContainer}>
-                <IonIcon name={"md-cloud-upload"} size={theme.sizes.iconSize} color={"#3e6c58"} />
-                <Text style={styles.saved}>Guardado</Text>
-              </View>
-            ) : null
-          }
+          
+          <View style={[
+            styles.chipContainer,
+            {
+              backgroundColor: isSaving ? theme.colors.generic.infoBacgroundColor : theme.colors.generic.successBackgroundColor,
+              borderColor: isSaving ? theme.colors.generic.infoBacgroundColor : theme.colors.generic.successBackgroundColor
+            }
+          ]}>
+            <IonIcon 
+              name={"md-cloud-upload"} 
+              size={theme.sizes.iconSize} 
+              color={isSaving ? theme.colors.generic.infoTextColor : theme.colors.generic.successTextColor} 
+            />
+            <Text style={[
+              styles.saved,
+              {color: isSaving ? theme.colors.generic.infoTextColor : theme.colors.generic.successTextColor}
+            ]}>{isSaving ? "Guardando" : "Guardado"}</Text>
+          </View>
         </HStack>
 
         <HStack>
@@ -145,8 +166,9 @@ const Editor: React.FC<EditorProps> = ({tab}) => {
       
       <View style={styles.editorContainer}>
         <AceEditor
+            value={activeTab.code}
             onChange={onCodeChange}
-            mode={tab.language.toLocaleLowerCase()}
+            mode={activeTab.language.toLocaleLowerCase()}
             theme={"xcode"}
             fontSize={16}
             tabSize={4}
@@ -170,7 +192,12 @@ const Editor: React.FC<EditorProps> = ({tab}) => {
         <IonIcon name={"ios-terminal-outline"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
         <IonIcon name={"ios-reload"} color={theme.colors.editor.text} size={theme.sizes.iconSize} />
 
-        <select ref={selectRef} defaultValue={tab.language} style={styles.select}>
+        <select 
+          ref={selectRef} 
+          defaultValue={activeTab.language} 
+          onChange={onLanguageChange}
+          style={styles.select}
+        >
           <option value="Bash">Bash</option>
           <option value="Golang">Go</option>
           <option value="Java">Java</option>
@@ -192,25 +219,26 @@ const styles = StyleSheet.create({
   textInput: {
     fontFamily: theme.fonts.bold,
     fontSize: 30,
-    borderRadius: theme.spacing.s2
+    borderRadius: theme.spacing.s2,
+    textTransform: "capitalize"
   },
   chipContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e3f2ee",
+    backgroundColor: theme.colors.generic.successBackgroundColor,
     borderWidth: 1,
-    borderColor: "#3e6c58",
+    borderColor: theme.colors.generic.successTextColor,
     borderRadius: theme.spacing.s1,
     padding: theme.spacing.s1,
     gap: theme.spacing.s2
   },
   saved: {
     fontFamily: theme.fonts.regular,
-    color: "#3e6c58"
+    color: theme.colors.generic.successTextColor
   },
   editorContainer: {
     flex: 1,
-    borderRadius: theme.spacing.s2,
+    borderRadius: theme.spacing.s4,
     borderWidth: 2,
     borderColor: theme.colors.editor.border,
     overflow: "hidden"

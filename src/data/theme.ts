@@ -13,6 +13,10 @@ type Theme = {
     colors: {
         generic: {
             buttonBackgroundColor: string;
+            infoBacgroundColor: string,
+            infoTextColor: string,
+            successBackgroundColor: string;
+            successTextColor: string;
         },
         getStarted: {
             textColor: string,
@@ -25,6 +29,10 @@ type Theme = {
             text: string;
             border: string;
             run: string;
+            savedBackgroundColor: string,
+            savedTextColor: string,
+            savingBackgroindColor: string,
+            savingTextColor: string
         },
         sidebar: {
             textColor: string;
@@ -32,6 +40,7 @@ type Theme = {
             iconColor: string;
             textInputBackgroundColor: string;
             inputTextColor: string;
+            textMatchFound: string;
         },
         modal: {
             backgroundColor: string,
@@ -57,11 +66,15 @@ export const theme: Theme = {
     sizes: {
         touchableHeight: 40,
         iconSize: 20,
-        titleSize: 40
+        titleSize: 30
     },
     colors: {
         generic: {
             buttonBackgroundColor: "#111727",
+            infoBacgroundColor: "#cfdefe",
+            infoTextColor: "#3f77e1",
+            successBackgroundColor: "#e3f2ee",
+            successTextColor: "#3e6c58"
         },
         getStarted: {
             textColor: "#111727",
@@ -73,7 +86,11 @@ export const theme: Theme = {
         editor: {
             text: "#000312",
             border: "#e8e8e8",
-            run: "#111727"
+            run: "#111727",
+            savedBackgroundColor: "",
+            savedTextColor: "",
+            savingBackgroindColor: "",
+            savingTextColor: ""
         },
         sidebar: {
             textColor: "#ffffff",
@@ -81,6 +98,7 @@ export const theme: Theme = {
             iconColor: "#ffffff",
             textInputBackgroundColor: "#343b48",
             inputTextColor: "#d4d9e3",
+            textMatchFound: "#00abfb"
         },
         modal: {
             backgroundColor: "#ffffff",

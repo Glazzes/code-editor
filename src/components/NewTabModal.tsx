@@ -35,7 +35,7 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
       id: uuid(),
       name: tabName,
       language: (language as Language),
-      code: []
+      code: "",
     }
 
     emitNewTabEvent(newTab);

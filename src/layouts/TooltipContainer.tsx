@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import {Text, StyleSheet} from 'react-native';
-import { theme } from '../data/theme';
 
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { 
+  withTiming, 
+  withDelay, 
+  useSharedValue, 
+  useAnimatedStyle,
+  runOnJS 
+} from 'react-native-reanimated';
+import {animationDuration} from '../data/animations';
+import {theme} from '../data/theme';
 
 type TooltipContainerProps = {
   content: string;
@@ -12,18 +19,32 @@ type TooltipContainerProps = {
 const TooltipContainer: React.FC<TooltipContainerProps> = ({children, content}) => {
   const [showToolTip, setShowToolTip] = useState<boolean>(false);
 
-  const onMouseEnter = () => setShowToolTip(true);
-  const onMouseLeave = () => setShowToolTip(false);
+  const opacity = useSharedValue<number>(0);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value
+    };
+  });
+  
+  const onMouseEnter = () => {
+    setShowToolTip(true);
+    opacity.value = withDelay(1000, withTiming(1, {duration: animationDuration}));
+  };
+
+  const onMouseLeave = () => {
+    opacity.value = withTiming(0, {duration: animationDuration}, finished => {
+      if(finished) {
+        runOnJS(setShowToolTip)(false);
+      }
+    })
+  }
 
   return (
     <div style={{position: "relative"}} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       {children}
       {
         showToolTip ? (
-          <Animated.View 
-            entering={FadeIn.duration(500)} 
-            exiting={FadeOut.duration(500)}
-            style={styles.tooltip}>
+          <Animated.View style={[styles.tooltip, animatedStyle]}>
             <Text style={styles.text}>{content}</Text>
           </Animated.View>
         ) : null

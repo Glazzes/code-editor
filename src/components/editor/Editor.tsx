@@ -11,7 +11,6 @@ import {View, StyleSheet, useWindowDimensions} from 'react-native';
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/mode-kotlin";
 import "ace-builds/src-noconflict/mode-golang";
 import "ace-builds/src-noconflict/mode-python";
 
