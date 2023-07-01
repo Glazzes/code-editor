@@ -1,0 +1,1 @@
+export const activeTabLSId = "last.active.tab.id";

@@ -1,8 +1,8 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 
 import AceEditor from "react-ace";
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import HStack from '../components/HStack';
 
@@ -10,7 +10,6 @@ import {calculateTextWidth} from '../utils/calculateTextWidth';
 import {emitUpdateTabNameEvent} from '../lib/emitter';
 import {Language} from '../types/language';
 import {theme} from '../data/theme';
-import {TabContent} from '../types/tabcontent';
 
 import 'ace-builds/src-noconflict/ace';
 import "ace-builds/src-noconflict/mode-java";
@@ -31,15 +30,14 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
 import { PressableOpacity } from '../components';
 import { animationDuration } from '../data/animations';
-
-type EditorProps = {
-  activeTab: TabContent;
-  setActiveTab: React.Dispatch<React.SetStateAction<TabContent>>;
-}
+import { TabContext } from '../context/TabProvider';
+import { runCode } from '../lib/runner';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
+const Editor: React.FC = () => {
+  const {activeTab: {value: activeTab, setActiveTab}} = useContext(TabContext);
+
   const selectRef = useRef<HTMLSelectElement>(null);
   const editorContainerRef = useRef<View>(null);
 
@@ -88,6 +86,14 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
     setActiveTab(prev => ({...prev, language: value}));
   }
 
+  const runEditorCode = () => {
+    if(activeTab) {
+      runCode(activeTab.language, activeTab.code)
+        .then(({Output: data}) => setActiveTab({...activeTab, lastExecutionResult: data}))
+        .catch(e => console.log(e));
+    }
+  }
+
   const assignSaveTimeout = () => {
     if(saveTimeout) clearTimeout(saveTimeout);
 
@@ -118,7 +124,7 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
 
   useEffect(() => {
     const textWidth = calculateTextWidth({
-      text: activeTab.name,
+      text: activeTab!!.name,
       font: theme.fonts.bold,
       sizePx: 30
     });
@@ -128,11 +134,11 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
 
   useEffect(() => {
     if(selectRef.current) {
-      selectRef.current.value = activeTab.language;
+      selectRef.current.value = activeTab!!.language;
     }
 
     const textWidth = calculateTextWidth({
-      text: activeTab.name,
+      text: activeTab!!.name,
       font: theme.fonts.bold,
       sizePx: 30
     });
@@ -145,7 +151,7 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
         <HStack>
           <AnimatedTextInput 
             style={[styles.textInput, rStyle]}
-            value={activeTab.name}
+            value={activeTab!!.name}
             onChangeText={onTabNameTitleChange}
             autoFocus={false}
             spellCheck={false}
@@ -175,7 +181,7 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
             <Text style={styles.importButtonText}>Importar archivo</Text>
           </Pressable>
 
-          <Pressable style={[styles.button, styles.runButton]}>
+          <Pressable onPress={runEditorCode} style={[styles.button, styles.runButton]}>
             <Text style={styles.buttonText}>Ejecutar</Text>
           </Pressable>
         </HStack>
@@ -183,11 +189,11 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
       
       <View style={styles.editorContainer} ref={editorContainerRef}>
         <AceEditor
-            value={activeTab.code}
+            value={activeTab!!.code}
             onChange={onCodeChange}
-            mode={activeTab.language.toLocaleLowerCase()}
+            mode={activeTab!!.language.toLocaleLowerCase()}
             theme={"xcode"}
-            fontSize={17}
+            fontSize={19}
             tabSize={4}
             focus={true}
             showPrintMargin={true}
@@ -204,7 +210,13 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
           />
 
           <Animated.View style={[styles.console, animatedStyle]}>
-
+            {
+              activeTab?.lastExecutionResult.map((line, index) => {
+                return (
+                  <Text key={`${line}-${index}`}>{line}</Text>
+                )
+              })
+            }
           </Animated.View>
       </View>
 
@@ -218,7 +230,7 @@ const Editor: React.FC<EditorProps> = ({activeTab, setActiveTab}) => {
 
           <select 
             ref={selectRef} 
-            defaultValue={activeTab.language} 
+            defaultValue={activeTab!!.language} 
             onChange={onLanguageChange}
             style={styles.select}
           >
@@ -262,7 +274,7 @@ const styles = StyleSheet.create({
   },
   editorContainer: {
     flex: 1,
-    borderRadius: theme.spacing.s4,
+    borderRadius: theme.spacing.s2,
     borderWidth: 2,
     borderColor: theme.colors.editor.border,
     overflow: "hidden"
@@ -318,4 +330,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Editor;
+export default React.memo(Editor);

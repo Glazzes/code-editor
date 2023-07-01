@@ -3,16 +3,21 @@ import React, {useEffect, useState} from 'react';
 import AceEditor from "react-ace";
 import RunResult from './RunResult';
 
-import {Tabs} from '../tabs';
-import {NewTabModal} from '../modal';
-import {TabContent} from '../../types/tabcontent';
-import {emitter} from '../../utils/eventlistener';
+import {Tabs} from './tabs';
+import {NewTabModal} from './modal';
+import {TabContent} from './types/tabcontent';
+import {emitter} from '../utils/eventlistener';
 import {View, StyleSheet, useWindowDimensions} from 'react-native';
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-golang";
 import "ace-builds/src-noconflict/mode-python";
+
+import "ace-builds/src-noconflict/snippets/java";
+import "ace-builds/src-noconflict/snippets/javascript";
+import "ace-builds/src-noconflict/snippets/python";
+import "ace-builds/src-noconflict/snippets/golang";
 
 import "ace-builds/src-noconflict/theme-one_dark";
 import "ace-builds/src-noconflict/theme-cloud9_night";
@@ -145,6 +150,7 @@ const Editor: React.FC<EditorProps> = ({}) => {
           setOptions={{
             enableLiveAutocompletion: true,
             enableBasicAutocompletion: true,
+            enableSnippets: true,
             showLineNumbers: true,
             fontSize: 18,
             animatedScroll: true,

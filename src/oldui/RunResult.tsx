@@ -12,8 +12,9 @@ import {
     View,
     Pressable,
 } from 'react-native';
-import { runningContext } from './RunningContext';
-import {emitter} from '../../utils/eventlistener';
+import {runningContext} from './RunningContext';
+import {emitter} from '../utils/eventlistener';
+
 
 function keyExtrator(item: string, index: number) {
   return `${item}-${index}`;

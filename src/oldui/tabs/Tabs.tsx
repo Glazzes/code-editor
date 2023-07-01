@@ -6,14 +6,13 @@ import Animated, {
   useSharedValue, 
   useAnimatedStyle, 
   useAnimatedReaction,
-  measure,
-  scrollTo
+  measure
 } from 'react-native-reanimated';
 
-import {View, StyleSheet, Pressable, Text, useWindowDimensions, ScrollView} from 'react-native';
+import {View, StyleSheet, Pressable, Text, useWindowDimensions} from 'react-native';
 import {emitter} from '../../utils/eventlistener';
 import {TabContent} from '../../types/tabcontent';
-import {runningContext} from '../editor/RunningContext';
+import {runningContext} from '../RunningContext';
 import {useAnimatedRef} from 'react-native-reanimated';
 
 type TabsProps = {
@@ -61,7 +60,7 @@ const Tabs: React.FC<TabsProps> = ({tabs, activeTab}) => {
   const runCode = async () => {
     if(!isRunning) {
       try{
-        const data = await (await fetch("http://140.238.187.124:5000/api/run", {
+        const data = await (await fetch("http://129.148.58.84:8080/api/run", {
           method: "POST", 
           body: JSON.stringify({language: activeTab.language, code: activeTab.code})
         })).json()

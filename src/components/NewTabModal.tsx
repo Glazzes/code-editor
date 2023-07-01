@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -11,13 +11,17 @@ import {TabContent} from '../types/tabcontent';
 import {theme} from '../data/theme';
 import {v4 as uuid} from 'uuid';
 import { Language } from '../types/language';
-import { emitNewTabEvent } from '../lib/emitter';
+import { TabContext } from '../context/TabProvider';
+import { saveTab } from '../lib/db';
+import { activeTabLSId } from '../data/constants';
 
 type NewTabModalProps = {
   onClose: () => void;
 }
 
 const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
+  const {activeTab: {value: activeTab, setActiveTab}, tabs: {setTabs}} = useContext(TabContext);
+
   const [tabName, setTabName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
 
@@ -36,9 +40,24 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
       name: tabName,
       language: (language as Language),
       code: "",
+      lastExecutionResult: []
     }
 
-    emitNewTabEvent(newTab);
+    setActiveTab(newTab);
+    setTabs(prev => {
+      const newTabs = prev.map(t => {
+        if(t.id === activeTab?.id) {
+          return activeTab;
+        }
+
+        return t;
+      })
+
+      return [...newTabs, newTab];
+    });
+
+    saveTab(newTab);
+    localStorage.setItem(activeTabLSId, newTab.id);
     exiting();
   }
 
@@ -67,7 +86,7 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
 
   useEffect(() => {
     entering();
-  }, [])
+  }, []);
 
   return (
     <Animated.View style={[styles.root, rStyle]}>

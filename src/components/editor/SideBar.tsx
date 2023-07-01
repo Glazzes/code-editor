@@ -13,14 +13,13 @@ import {theme} from '../../data/theme';
 
 type SideBarProps = {
   tabs: TabContent[];
-  activeTabId?: string;
 }
 
 function keyExtractor(item: TabContent, index: number): string {
   return `${item.id}-${index}`;
 }
 
-const SideBar: React.FC<SideBarProps> = ({tabs, activeTabId}) => {
+const SideBar: React.FC<SideBarProps> = ({tabs}) => {
   const {height} = useWindowDimensions();
   const sideBarHeight = height - theme.spacing.s2 * 2;
 
@@ -32,7 +31,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs, activeTabId}) => {
   }
 
   const renderItem = (info: ListRenderItemInfo<TabContent>): React.ReactElement => {
-    return <SideBarTab tab={info.item} activeTabId={activeTabId} searchTerm={searchTerm} />
+    return <SideBarTab tab={info.item} searchTerm={searchTerm} />
   }
 
   useEffect(() => {

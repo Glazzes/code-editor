@@ -1,0 +1,36 @@
+version: "3.7"
+
+services:
+  editor:
+    image: glazee/borealis-editor:latest
+    container_name: editor
+    ports:
+      - 80:80
+    depends_on:
+      - borealis
+      - cache
+
+  editor-preview:
+    image: glazee/borealis-editor:preview
+    container_name: editor-preview
+    ports:
+      - 3000:3000
+    depends_on:
+      - borealis
+      - cache
+
+  borealis:
+    image: glazee/borealis:latest
+    container_name: borealis
+    ports:
+    - 8080:8080
+    depends_on:
+      - cache
+    cap_add:
+      - LINUX_IMMUTABLE
+
+  cache:
+    image: redis:7.0-alpine
+    container_name: cache
+    ports:
+      - 6379:6379

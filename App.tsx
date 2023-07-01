@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useFonts} from 'expo-font';
 import SideBar from './src/components/editor/SideBar';
@@ -6,13 +6,15 @@ import {theme} from './src/data/theme';
 import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
 import GetStarted from './src/components/GetStarted';
-import {TabContent} from './src/types/tabcontent';
 import {addNewTabEventListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
-import { findTextSearchMatches } from './src/utils/findSearchMatches';
-import { Editor } from './src/components/editor';
-import RunningContext from './src/components/editor/RunningContext';
+import Editor from './src/features/Editor';
 
-export default function App() {
+import TabProvider, { TabContext } from './src/context/TabProvider';
+import { getAllTabs, setUpDB } from './src/lib/db';
+import { TabContent } from './src/types/tabcontent';
+import { activeTabLSId } from './src/data/constants';
+
+const App = () => {
   const [fontsLoaded] = useFonts({
     "Bold": require("./assets/fonts/Inter-ExtraBold.ttf"),
     "SemiBold": require("./assets/fonts/Inter-SemiBold.ttf"),
@@ -20,8 +22,8 @@ export default function App() {
     "Regular": require("./assets/fonts/Inter-Regular.ttf")
   });
 
-  const [activeTab, setActiveTab] = useState<TabContent>({name: "Java", language: "Java", id: "1", code: ""});
-  const [tabs, setTabs] = useState<TabContent[]>([{name: "Java", language: "Java", id: "1", code: ""}]);
+  const {activeTab: {value: activeTab, setActiveTab}, tabs: {value: tabs, setTabs}} 
+    = useContext(TabContext);
   const [showNewTabModal, setShowNewTabModal] = useState<boolean>(false);
 
   const openModal = () => setShowNewTabModal(true);
@@ -126,11 +128,28 @@ export default function App() {
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    const t = findTextSearchMatches("Binary Search Java", "");
+  const retrieveState = (savedTabs: TabContent[]) => {
+    setTabs(savedTabs);
+    const lastActiveTabId = localStorage.getItem(activeTabLSId);
+    if(lastActiveTabId) {
+      for(let tab of savedTabs) {
+        if(tab.id === lastActiveTabId) {
+          setActiveTab(tab);
+        }
+      }
+    }
+  }
 
-    console.log(t);
-  }, [])
+  useEffect(() => {
+    const initDB = async () => {
+      const canUse = await setUpDB();
+      if(canUse) {
+        await getAllTabs(retrieveState);
+      }
+    }
+
+    initDB();
+  }, []);
 
   if(!fontsLoaded) {
     return null;
@@ -138,16 +157,37 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <RunningContext>
-        <Editor />
-      </RunningContext>
+      <SideBar tabs={tabs} />
+      { activeTab ? (
+          <Editor />
+        ) : (
+          <GetStarted />
+        )
+      }
+
+      {
+        showNewTabModal ? (
+          <DarkOpacityOverlay>
+            <NewTabModal onClose={closeModal} />
+          </DarkOpacityOverlay>
+        ) : null
+      }
     </View>
   );
+}
+
+export default function TabApp () {
+  return (
+    <TabProvider>
+      <App />
+    </TabProvider>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: theme.spacing.s2,
     flexDirection: "row",
     justifyContent: 'center',
   },
