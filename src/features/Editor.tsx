@@ -5,11 +5,16 @@ import AceEditor from "react-ace";
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import HStack from '../components/HStack';
+import ResizableInputText from './editor/ResizableInputText';
 
-import {calculateTextWidth} from '../utils/calculateTextWidth';
 import {emitUpdateTabNameEvent} from '../lib/emitter';
 import {Language} from '../types/language';
 import {theme} from '../data/theme';
+import { PressableOpacity } from '../components';
+import { animationDuration } from '../data/animations';
+import { TabContext } from '../context/TabProvider';
+import { runCode } from '../lib/runner';
+import databaseService from '../lib/db';
 
 import 'ace-builds/src-noconflict/ace';
 import "ace-builds/src-noconflict/mode-java";
@@ -28,12 +33,6 @@ import "ace-builds/src-noconflict/ext-error_marker";
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
-import { PressableOpacity } from '../components';
-import { animationDuration } from '../data/animations';
-import { TabContext } from '../context/TabProvider';
-import { runCode } from '../lib/runner';
-
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const Editor: React.FC = () => {
   const {activeTab: {value: activeTab, setActiveTab}} = useContext(TabContext);
@@ -43,6 +42,7 @@ const Editor: React.FC = () => {
 
   const translateY = useSharedValue<number>(0);
 
+  const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveTimeout, setSaveTimeout] = useState<number>();
 
@@ -51,15 +51,7 @@ const Editor: React.FC = () => {
       setIsSaving(false);
       setActiveTab(prev => ({...prev, name: content}));
       assignSaveTimeout();
-
-      const textWidth = calculateTextWidth({
-        text: content,
-        font: theme.fonts.bold,
-        sizePx: 30,
-      });
-
-      inputWidth.value = textWidth;
-      emitUpdateTabNameEvent(activeTab.id, content);
+      emitUpdateTabNameEvent(activeTab!!.id, content);
     }
   }
 
@@ -77,28 +69,41 @@ const Editor: React.FC = () => {
 
   const onCodeChange = (content: string) => {
     setIsSaving(true);
-    setActiveTab(prev => ({...prev, code: content}));
-    assignSaveTimeout();
+    setActiveTab(prev => {
+      if(prev) return ({...prev, code: content});
+      return prev;
+    });
+    assignSaveTimeout(content);
   }
 
   const onLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as Language;
-    setActiveTab(prev => ({...prev, language: value}));
+    setActiveTab(prev => {
+      if(prev) return ({...prev, language: value});
+      return prev;
+    });
   }
 
   const runEditorCode = () => {
+    setIsRunning(true);
     if(activeTab) {
       runCode(activeTab.language, activeTab.code)
         .then(({Output: data}) => setActiveTab({...activeTab, lastExecutionResult: data}))
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
+        .finally(() => setIsRunning(false));
     }
   }
 
-  const assignSaveTimeout = () => {
+  const assignSaveTimeout = (code?: string) => {
     if(saveTimeout) clearTimeout(saveTimeout);
 
     const newSaveInterval = setTimeout(() => {
       setIsSaving(false);
+      if(activeTab) {
+        const currentCode = code ?? activeTab.code;
+        const newTab = {...activeTab, code: currentCode};
+        databaseService.saveTab(newTab);
+      }
     }, 1200);
 
     setSaveTimeout(newSaveInterval);
@@ -114,48 +119,17 @@ const Editor: React.FC = () => {
     t.click();
   }
 
-  // Aniamtions
-  const inputWidth = useSharedValue<number>(0);
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      width: inputWidth.value,
-    };
-  });
-
-  useEffect(() => {
-    const textWidth = calculateTextWidth({
-      text: activeTab!!.name,
-      font: theme.fonts.bold,
-      sizePx: 30
-    });
-
-    inputWidth.value = textWidth;
-  }, []);
-
   useEffect(() => {
     if(selectRef.current) {
       selectRef.current.value = activeTab!!.language;
     }
-
-    const textWidth = calculateTextWidth({
-      text: activeTab!!.name,
-      font: theme.fonts.bold,
-      sizePx: 30
-    });
-    inputWidth.value = textWidth;
   }, [activeTab]);
 
   return (
     <View style={styles.root}>
       <HStack justifyContent={"space-between"}>
         <HStack>
-          <AnimatedTextInput 
-            style={[styles.textInput, rStyle]}
-            value={activeTab!!.name}
-            onChangeText={onTabNameTitleChange}
-            autoFocus={false}
-            spellCheck={false}
-          />
+          <ResizableInputText onChangeText={onTabNameTitleChange} />
           
           <View style={[
             styles.chipContainer,
@@ -181,8 +155,8 @@ const Editor: React.FC = () => {
             <Text style={styles.importButtonText}>Importar archivo</Text>
           </Pressable>
 
-          <Pressable onPress={runEditorCode} style={[styles.button, styles.runButton]}>
-            <Text style={styles.buttonText}>Ejecutar</Text>
+          <Pressable onPress={runEditorCode} style={[styles.button, isRunning ? styles.runButtonDisabled : styles.runButton]}>
+            <Text style={isRunning ? styles.runButtonTextDisabled : styles.runButtonText}>Ejecutar</Text>
           </Pressable>
         </HStack>
       </HStack>
@@ -253,11 +227,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.s4,
     marginLeft: theme.spacing.s8
   },
-  textInput: {
-    fontFamily: theme.fonts.bold,
-    fontSize: 30,
-    borderRadius: theme.spacing.s2,
-  },
   chipContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -289,8 +258,15 @@ const styles = StyleSheet.create({
   runButton: {
     backgroundColor: theme.colors.generic.buttonBackgroundColor,
   },
-  buttonText: {
+  runButtonDisabled: {
+    backgroundColor: "#fafafc",
+  },
+  runButtonText: {
     color: "#fff",
+    fontFamily: theme.fonts.regular,
+  },
+  runButtonTextDisabled: {
+    color: "#a4abb6",
     fontFamily: theme.fonts.regular,
   },
   importButton: {

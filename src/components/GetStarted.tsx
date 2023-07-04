@@ -48,13 +48,13 @@ const GetStarted: React.FC = () => {
         </Text>
 
         <Text style={styles.text}>
-          <span style={styles.chipContainer}>ctrl</span> + <span style={styles.chipContainer}>r</span> 
-          {" "}Ejecutar codigo en la pestaña activa
+          <span style={styles.chipContainer}>ctrl</span> + <span style={styles.chipContainer}>h</span> 
+          {" "}Ir al historial de ejecucion
         </Text>
 
         <Text style={styles.text}>
-          <span style={styles.chipContainer}>ctrl</span> + <span style={styles.chipContainer}>h</span> 
-          {" "}Ir al historial de ejecucion
+          <span style={styles.chipContainer}>alt</span> + <span style={styles.chipContainer}>f9</span> 
+          {" "}Ejecutar codigo en la pestaña activa
         </Text>
 
         <Text style={styles.text}>

@@ -10,7 +10,7 @@ import {addNewTabEventListener, registerUpdateActiveTabNameListener} from './src
 import Editor from './src/features/Editor';
 
 import TabProvider, { TabContext } from './src/context/TabProvider';
-import { getAllTabs, setUpDB } from './src/lib/db';
+import databaseService from './src/lib/db';
 import { TabContent } from './src/types/tabcontent';
 import { activeTabLSId } from './src/data/constants';
 
@@ -33,10 +33,6 @@ const App = () => {
     if(e.ctrlKey) {
       if(e.key === "a") openModal();
   
-      if(e.key === "k") {
-        console.log("close active tab");
-      }
-  
       if(e.key === "q") {
         setTabs([]);
         setActiveTab(undefined);
@@ -48,22 +44,6 @@ const App = () => {
 
       if(e.key === "h") {
         console.log("go to history");
-      }
-    }
-  }
-
-  const onAltKeyShortcut = (e: KeyboardEvent) => {
-    if(e.altKey && "1234567890".indexOf(e.key) != -1) {
-      const index = parseInt(e.key, 10) - 1;
-      const tab = tabs[index];
-      if(tab) {
-        const newTabs = tabs.map(t => {
-          if(t.id === activeTab?.id) return activeTab;
-          return t;
-        });
-
-        setActiveTab(tab);
-        setTabs(newTabs);
       }
     }
   }
@@ -104,13 +84,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("keyup", onAltKeyShortcut);
-    return () => {
-      window.removeEventListener("keyup", onAltKeyShortcut);
-    }
-  }, [tabs, activeTab]);
-
-  useEffect(() => {
     const newTabSub = addNewTabEventListener(newTab => {
       setActiveTab(newTab);
       setTabs(tbs => {
@@ -142,9 +115,9 @@ const App = () => {
 
   useEffect(() => {
     const initDB = async () => {
-      const canUse = await setUpDB();
+      const canUse = await databaseService.initDb();
       if(canUse) {
-        await getAllTabs(retrieveState);
+        databaseService.getAllTabs(retrieveState);
       }
     }
 

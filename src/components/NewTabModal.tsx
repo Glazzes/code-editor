@@ -12,8 +12,8 @@ import {theme} from '../data/theme';
 import {v4 as uuid} from 'uuid';
 import { Language } from '../types/language';
 import { TabContext } from '../context/TabProvider';
-import { saveTab } from '../lib/db';
 import { activeTabLSId } from '../data/constants';
+import databaseService from '../lib/db';
 
 type NewTabModalProps = {
   onClose: () => void;
@@ -46,17 +46,14 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
     setActiveTab(newTab);
     setTabs(prev => {
       const newTabs = prev.map(t => {
-        if(t.id === activeTab?.id) {
-          return activeTab;
-        }
-
+        if(t.id === activeTab?.id) return activeTab;
         return t;
-      })
+      });
 
       return [...newTabs, newTab];
     });
 
-    saveTab(newTab);
+    databaseService.saveTab(newTab);
     localStorage.setItem(activeTabLSId, newTab.id);
     exiting();
   }
@@ -94,7 +91,7 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
       <View>
         <Text style={styles.title}>Crear nueva pestaña</Text>
         <Text style={styles.subtitle}>
-            Escoge un nombre y un lenguaje de programacion para que empecemos
+          Escoge un nombre y un lenguaje de programacion para que empecemos
         </Text>
       </View>
 

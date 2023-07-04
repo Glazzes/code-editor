@@ -31,7 +31,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
   }
 
   const renderItem = (info: ListRenderItemInfo<TabContent>): React.ReactElement => {
-    return <SideBarTab tab={info.item} searchTerm={searchTerm} />
+    return <SideBarTab tab={info.item} index={info.index} searchTerm={searchTerm} />
   }
 
   useEffect(() => {

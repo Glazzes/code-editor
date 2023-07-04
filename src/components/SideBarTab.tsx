@@ -9,13 +9,16 @@ import {TabContent} from '../types/tabcontent';
 import {TabContext} from '../context/TabProvider';
 import {theme} from '../data/theme';
 import {HStack} from '../layouts';
+import { activeTabLSId } from '../data/constants';
+import databaseService from '../lib/db';
 
 type SideBarTabProps = {
   tab: TabContent;
+  index: number;
   searchTerm: string;
 };
 
-const SideBarTab: React.FC<SideBarTabProps> = ({tab, searchTerm}) => {
+const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
   const {activeTab: {value: activeTab, setActiveTab}, tabs: {value: tabs, setTabs}} 
     = useContext(TabContext);
 
@@ -24,6 +27,7 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, searchTerm}) => {
 
   const setTabAsActiveTab = () => {
     setActiveTab(tab);
+    localStorage.setItem(activeTabLSId, tab.id);
   }
 
   const removeTab = () => {
@@ -44,17 +48,49 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, searchTerm}) => {
 
       if(activeTabIndex === 0 && tabs.length >= 2) {
         setActiveTab(tabs[1]);
+        localStorage.setItem(activeTabLSId, tabs[1].id);
       }
 
       if(activeTabIndex === tabs.length - 1 && tabs.length >= 2) {
         setActiveTab(tabs[tabs.length - 2]);
+        localStorage.setItem(activeTabLSId, tabs[tabs.length - 2].id);
       }
     }
 
-    setTabs(prev => prev.filter(t => {
-      return t.id !== tab.id
-    }));
+    databaseService.deleteTabById(tab.id);
+    setTabs(prev => prev.filter(t => t.id !== tab.id));
   }
+
+  const updateActiveTab = (e: KeyboardEvent) => {
+    if(e.altKey && "123456789".indexOf(e.key) != -1) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const newActiveTabIndex = parseInt(e.key, 10);
+      if(newActiveTabIndex === index + 1) {
+        const newActiveTab = tabs[index];
+        if(newActiveTab !== undefined) {
+          setActiveTab(newActiveTab);
+          localStorage.setItem(activeTabLSId, newActiveTab.id);
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    const closeTabShortcut = (e: KeyboardEvent) => {
+      if(e.altKey && e.key === "k" && isActiveTab) {
+        removeTab();
+      }
+    }
+
+    window.addEventListener("keyup", closeTabShortcut);
+    window.addEventListener("keyup", updateActiveTab);
+    return () => {
+      window.removeEventListener("keyup", closeTabShortcut);
+      window.removeEventListener("keyup", updateActiveTab);
+    };
+  }, [tab, activeTab]);
 
   useEffect(() => {
     const textMatches = findTextSearchMatches(tab.name, searchTerm);
