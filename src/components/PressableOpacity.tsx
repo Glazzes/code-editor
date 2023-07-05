@@ -1,15 +1,16 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, ViewStyle} from 'react-native';
 
 type PressableOpacityProps = {
-    children: React.ReactNode;
-    onPress: () => void;
+  children: React.ReactNode;
+  onPress: () => void;
+  style?: ViewStyle;
 };
 
-const PressableOpacity: React.FC<PressableOpacityProps> = ({children, onPress}) => {
+const PressableOpacity: React.FC<PressableOpacityProps> = ({children, onPress, style}) => {
   return (
     <Pressable onPress={onPress} style={({pressed}) => {
-        return {opacity: pressed ? 0.7 : 1}
+        return {...style, opacity: pressed ? 0.7 : 1}
     }} >
       {children}
     </Pressable>

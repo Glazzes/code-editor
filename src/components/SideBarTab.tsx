@@ -9,8 +9,10 @@ import {TabContent} from '../types/tabcontent';
 import {TabContext} from '../context/TabProvider';
 import {theme} from '../data/theme';
 import {HStack} from '../layouts';
-import { activeTabLSId } from '../data/constants';
+import { activeTabLSId, rememberCloseTabDecision } from '../data/constants';
 import databaseService from '../lib/db';
+import { emitOpenGenericModalEvent } from '../lib/emitter';
+import { closeMessageData } from '../data/modaldata';
 
 type SideBarTabProps = {
   tab: TabContent;
@@ -28,6 +30,16 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
   const setTabAsActiveTab = () => {
     setActiveTab(tab);
     localStorage.setItem(activeTabLSId, tab.id);
+  }
+
+  const removeTabWithDecision = () => {
+    const lastDecision = localStorage.getItem(rememberCloseTabDecision);
+    if(lastDecision !== null) {
+      removeTab();
+      return;
+    }else {
+      emitOpenGenericModalEvent({...closeMessageData, onPress: removeTab});
+    }
   }
 
   const removeTab = () => {
@@ -80,7 +92,7 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
   useEffect(() => {
     const closeTabShortcut = (e: KeyboardEvent) => {
       if(e.altKey && e.key === "k" && isActiveTab) {
-        removeTab();
+        removeTabWithDecision();
       }
     }
 
@@ -117,8 +129,8 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
               }
             </Text>
           </HStack>
-          <Pressable onPress={removeTab}>
-            <IonIcon name={"ios-close"} color={"#fff"} size={theme.sizes.iconSize} />
+          <Pressable onPress={removeTabWithDecision}>
+            <IonIcon name={"ios-close"} color={isActiveTab ? "#fff" : theme.colors.sidebar.textInputBackgroundColor} size={theme.sizes.iconSize} />
           </Pressable>
         </HStack>
       </View>

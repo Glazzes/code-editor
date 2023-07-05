@@ -10,6 +10,8 @@ import {ToolTipContainer} from '../../layouts';
 import {TabContent} from '../../types/tabcontent';
 
 import {theme} from '../../data/theme';
+import PressableOpacity from '../PressableOpacity';
+import { emitOpenNewTabModalEvent } from '../../lib/emitter';
 
 type SideBarProps = {
   tabs: TabContent[];
@@ -26,12 +28,16 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredTabs, setFilteredTabs] = useState<TabContent[]>(tabs);
 
+  const renderItem = (info: ListRenderItemInfo<TabContent>): React.ReactElement => {
+    return <SideBarTab tab={info.item} index={info.index} searchTerm={searchTerm} />
+  }
+
   const onSearchTermChange = (text: string) => {
     setSearchTerm(text);
   }
 
-  const renderItem = (info: ListRenderItemInfo<TabContent>): React.ReactElement => {
-    return <SideBarTab tab={info.item} index={info.index} searchTerm={searchTerm} />
+  const createNewTab = () => {
+    emitOpenNewTabModalEvent();
   }
 
   useEffect(() => {
@@ -48,10 +54,10 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
         </View>
 
         <ToolTipContainer content={"ctrl + a"}>
-          <View style={styles.container}>
+          <PressableOpacity onPress={createNewTab} style={styles.container}>
             <IonIcon name={"ios-add"} color={theme.colors.sidebar.iconColor} size={theme.sizes.iconSize} />
             <Text style={styles.text}>Nueva pestaña</Text>
-          </View>
+          </PressableOpacity>
         </ToolTipContainer>
       </View>
 

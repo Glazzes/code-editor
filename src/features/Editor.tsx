@@ -33,6 +33,8 @@ import "ace-builds/src-noconflict/ext-error_marker";
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
+import { readCodeFileContents } from '../utils/fileupload';
+import { activeTabLSId } from '../data/constants';
 
 const Editor: React.FC = () => {
   const {activeTab: {value: activeTab, setActiveTab}} = useContext(TabContext);
@@ -46,12 +48,15 @@ const Editor: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveTimeout, setSaveTimeout] = useState<number>();
 
-  const onTabNameTitleChange = (content: string) => {
-    if(content !== "") {
+  const onTabNameTitleChange = (name: string) => {
+    if(name !== "") {
       setIsSaving(false);
-      setActiveTab(prev => ({...prev, name: content}));
-      assignSaveTimeout();
-      emitUpdateTabNameEvent(activeTab!!.id, content);
+      setActiveTab(prev => {
+        if(!prev) return prev;
+        return {...prev, name}
+      });
+      assignSaveTimeout(undefined, name);
+      emitUpdateTabNameEvent(activeTab!!.id, name);
     }
   }
 
@@ -73,7 +78,7 @@ const Editor: React.FC = () => {
       if(prev) return ({...prev, code: content});
       return prev;
     });
-    assignSaveTimeout(content);
+    assignSaveTimeout(content, undefined);
   }
 
   const onLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -94,15 +99,18 @@ const Editor: React.FC = () => {
     }
   }
 
-  const assignSaveTimeout = (code?: string) => {
+  const assignSaveTimeout = (
+    code: string | undefined,
+    name: string | undefined,
+  ) => {
     if(saveTimeout) clearTimeout(saveTimeout);
 
     const newSaveInterval = setTimeout(() => {
       setIsSaving(false);
       if(activeTab) {
-        const currentCode = code ?? activeTab.code;
-        const newTab = {...activeTab, code: currentCode};
+        const newTab = {...activeTab, code: code ?? activeTab.code, name: name ?? activeTab.name};
         databaseService.saveTab(newTab);
+        localStorage.setItem(activeTabLSId, activeTab.id);
       }
     }, 1200);
 
@@ -110,13 +118,13 @@ const Editor: React.FC = () => {
   }
 
   const uploadFile = () => {
-    const t: HTMLInputElement = document.createElement("input");
-    t.type = "file";
-    t.style.position  = "absolute";
-    t.style.opacity = "0";
-
-    document.body.appendChild(t);
-    t.click();
+    readCodeFileContents(
+      (code) => setActiveTab(prev => {
+        if(!prev) return prev;
+        return {...prev, code};
+      }),
+      (error) => console.warn(error)
+    );
   }
 
   useEffect(() => {
@@ -167,10 +175,11 @@ const Editor: React.FC = () => {
             onChange={onCodeChange}
             mode={activeTab!!.language.toLocaleLowerCase()}
             theme={"xcode"}
-            fontSize={19}
+            fontSize={18}
             tabSize={4}
             focus={true}
             showPrintMargin={true}
+            showGutter={true}
             style={{width: "100%", height: "100%"}}
             setOptions={{
               enableLiveAutocompletion: true,

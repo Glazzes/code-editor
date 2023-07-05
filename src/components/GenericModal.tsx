@@ -13,9 +13,10 @@ import { animationDuration } from '../data/animations';
 type GenericModalProps = {
   title: string;
   description: string;
-	actionName: string;
+  actionName: string;
   rememberActionKeyName: string;
   onPress: () => void;
+  onDismiss: () => void;
 };
 
 const GenericModal: React.FC<GenericModalProps> = ({
@@ -23,34 +24,34 @@ const GenericModal: React.FC<GenericModalProps> = ({
 	description,
 	actionName,
 	rememberActionKeyName,
-	onPress
+	onPress,
+	onDismiss
 }) => {
 	const scale = useSharedValue<number>(0);
 	const [remember, setRemember] = useState<boolean>(false);
 
 	const onChangeDecision = () => {
-		setRemember(r => !r);
+	  setRemember(r => !r);
 	}
-
-	const onDimmiss = () => {}
 
 	const dimissModal = () => {
     scale.value = withTiming(0, {duration: animationDuration}, finished => {
       if(finished) {
-        runOnJS(onDimmiss)();
+        runOnJS(onDismiss)();
       }
     });
   }
 
 	const onClick = () => {
 		onPress();
+		dimissModal();
 		if(remember) {
 			localStorage.setItem(rememberActionKeyName, "true");
 		}
 	}
 
   return (
-    <ModalKeyFrameWrapper onDimmiss={onDimmiss} scale={scale}>
+    <ModalKeyFrameWrapper onDimmiss={dimissModal} scale={scale}>
 			<View style={styles.root}>
       	<Logo dark={true} />
 				<View>

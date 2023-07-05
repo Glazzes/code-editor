@@ -28,7 +28,7 @@ const TooltipContainer: React.FC<TooltipContainerProps> = ({children, content}) 
   
   const onMouseEnter = () => {
     setShowToolTip(true);
-    opacity.value = withDelay(1000, withTiming(1, {duration: animationDuration}));
+    opacity.value = withDelay(animationDuration * 2, withTiming(1, {duration: animationDuration}));
   };
 
   const onMouseLeave = () => {

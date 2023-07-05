@@ -1,13 +1,31 @@
 import {EventEmitter, EventSubscription} from "fbemitter";
+import { ModalData } from "../data/modaldata";
 import {TabContent} from "../types/tabcontent";
 
 type TabCallback = (newTab: TabContent) => void; 
 
 const emitter = new EventEmitter();
 
-export const closeActiveTabEventName = "closeActiveTab";
+const openNewTabModal = "open.new.tab.modal";
+export const addOpenNewtbaModalListener = (callback: () => void): EventSubscription => {
+    return emitter.addListener(openNewTabModal, callback);
+}
 
-export const newTabEventName = "newTab";
+export const emitOpenNewTabModalEvent = () => {
+    emitter.emit(openNewTabModal);
+}
+
+const openGenericModal = "open.generic.modal";
+type CompleteModalData = ModalData & {onPress: () => void};
+export const addOpenGenericModalListener = (callback: (data: CompleteModalData) => void): EventSubscription => {
+    return emitter.addListener(openGenericModal, callback);
+}
+
+export const emitOpenGenericModalEvent = (data: CompleteModalData) => {
+    emitter.emit(openGenericModal, data);
+}
+
+const newTabEventName = "newTab";
 export const addNewTabEventListener = (callback: TabCallback): EventSubscription => {
     return emitter.addListener(newTabEventName, callback);
 }

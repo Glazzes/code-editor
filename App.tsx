@@ -6,13 +6,15 @@ import {theme} from './src/data/theme';
 import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
 import GetStarted from './src/components/GetStarted';
-import {addNewTabEventListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
+import {addNewTabEventListener, addOpenGenericModalListener, addOpenNewtbaModalListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
 import Editor from './src/features/Editor';
 
 import TabProvider, { TabContext } from './src/context/TabProvider';
 import databaseService from './src/lib/db';
 import { TabContent } from './src/types/tabcontent';
 import { activeTabLSId } from './src/data/constants';
+import GenericModal from './src/components/GenericModal';
+import { ModalData } from './src/data/modaldata';
 
 const App = () => {
   const [fontsLoaded] = useFonts({
@@ -24,7 +26,11 @@ const App = () => {
 
   const {activeTab: {value: activeTab, setActiveTab}, tabs: {value: tabs, setTabs}} 
     = useContext(TabContext);
+  
   const [showNewTabModal, setShowNewTabModal] = useState<boolean>(false);
+
+  const [modalData, setModalData] = useState<ModalData & {onPress: () => void}>();
+  const [showGenericModal, setShowGenericModal] = useState<boolean>(false);
 
   const openModal = () => setShowNewTabModal(true);
   const closeModal = () => setShowNewTabModal(false);
@@ -71,13 +77,21 @@ const App = () => {
     return () => {
       updateTabNameSub.remove();
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
+    const openNewModalSub = addOpenNewtbaModalListener(openModal);
+    const openGenericModal = addOpenGenericModalListener((data) => {
+      setShowGenericModal(true);
+      setModalData(data);
+    });
+
     window.addEventListener("keyup", onControlKeyShortcut);
     window.addEventListener("keydown", ignoreShortcuts);
 
     return () => {
+      openNewModalSub.remove();
+      openGenericModal.remove();
       window.removeEventListener("keydown", ignoreShortcuts);
       window.removeEventListener("keyup", onControlKeyShortcut);
     }
@@ -138,10 +152,20 @@ const App = () => {
         )
       }
 
-      {
-        showNewTabModal ? (
+      { showNewTabModal ? (
           <DarkOpacityOverlay>
             <NewTabModal onClose={closeModal} />
+          </DarkOpacityOverlay>
+        ) : null
+      }
+
+      {
+        showGenericModal && modalData ? (
+          <DarkOpacityOverlay>
+            <GenericModal {...modalData} onDismiss={(() => {
+							setModalData(undefined);
+							setShowGenericModal(false);
+						})} />
           </DarkOpacityOverlay>
         ) : null
       }
