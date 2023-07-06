@@ -1,20 +1,22 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import AceEditor from "react-ace";
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import { useSharedValue, withTiming } from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import HStack from '../components/HStack';
 import ResizableInputText from './editor/ResizableInputText';
 
-import {emitUpdateTabNameEvent} from '../lib/emitter';
-import {Language} from '../types/language';
-import {theme} from '../data/theme';
+import databaseService from '../lib/db';
+import { emitTriggerFakeIntervalEvent, emitUpdateTabNameEvent } from '../lib/emitter';
+import { Language } from '../types/language';
+import { theme } from '../data/theme';
 import { PressableOpacity } from '../components';
 import { animationDuration } from '../data/animations';
 import { TabContext } from '../context/TabProvider';
 import { runCode } from '../lib/runner';
-import databaseService from '../lib/db';
+import { readCodeFileContents } from '../utils/fileupload';
+import { activeTabLSId } from '../data/constants';
 
 import 'ace-builds/src-noconflict/ace';
 import "ace-builds/src-noconflict/mode-java";
@@ -33,8 +35,7 @@ import "ace-builds/src-noconflict/ext-error_marker";
 import 'ace-builds/src-min-noconflict/ext-searchbox';
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-beautify";
-import { readCodeFileContents } from '../utils/fileupload';
-import { activeTabLSId } from '../data/constants';
+import CodeResult from './CodeResult';
 
 const Editor: React.FC = () => {
   const {activeTab: {value: activeTab, setActiveTab}} = useContext(TabContext);
@@ -43,6 +44,8 @@ const Editor: React.FC = () => {
   const editorContainerRef = useRef<View>(null);
 
   const translateY = useSharedValue<number>(0);
+  const width = useSharedValue<number>(0);
+  const height = useSharedValue<number>(0);
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -62,15 +65,9 @@ const Editor: React.FC = () => {
 
   const openConsole = () => {
     editorContainerRef.current?.measure((x, y, w, h) => {
-      translateY.value = withTiming((-1 * h) / 2, {duration: animationDuration});
+      translateY.value = withTiming(-1 * (h / 2), {duration: animationDuration});
     });
   }
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateY: translateY.value}]
-    };
-  });
 
   const onCodeChange = (content: string) => {
     setIsSaving(true);
@@ -89,11 +86,26 @@ const Editor: React.FC = () => {
     });
   }
 
-  const runEditorCode = () => {
+  const executeCodeWithKeyboardShortcut = (e: KeyboardEvent) => {
+    if(e.altKey && e.key === "F9") {
+      executeCode();
+    }
+  }
+
+  const executeCode = () => {
     setIsRunning(true);
+    setActiveTab(prev => ({...prev, lastExecutionResult: []}));
+
     if(activeTab) {
+      openConsole();
+      emitTriggerFakeIntervalEvent();
+
       runCode(activeTab.language, activeTab.code)
-        .then(({Output: data}) => setActiveTab({...activeTab, lastExecutionResult: data}))
+        .then(({Output: data}) => {
+          const newActiveTab = {...activeTab, lastExecutionResult: data}
+          setActiveTab(newActiveTab);
+          databaseService.saveTab(newActiveTab);
+        })
         .catch(e => console.log(e))
         .finally(() => setIsRunning(false));
     }
@@ -128,8 +140,29 @@ const Editor: React.FC = () => {
   }
 
   useEffect(() => {
+    editorContainerRef.current?.measure((x, y, w, h) => {
+      width.value = w;
+      height.value = h;
+    });
+
+		window.addEventListener("keyup", e => {
+			if(e.ctrlKey && (e.key === "-" || e.key === "+")) {
+				editorContainerRef.current?.measure((x, y, w, h) => {
+          width.value = w;
+          height.value = h;
+        })
+			}
+		});
+	}, []);
+
+  useEffect(() => {
     if(selectRef.current) {
       selectRef.current.value = activeTab!!.language;
+    }
+
+    window.addEventListener("keyup", executeCodeWithKeyboardShortcut);
+    return () => {
+      window.removeEventListener("keyup", executeCodeWithKeyboardShortcut);
     }
   }, [activeTab]);
 
@@ -163,7 +196,7 @@ const Editor: React.FC = () => {
             <Text style={styles.importButtonText}>Importar archivo</Text>
           </Pressable>
 
-          <Pressable onPress={runEditorCode} style={[styles.button, isRunning ? styles.runButtonDisabled : styles.runButton]}>
+          <Pressable onPress={executeCode} style={[styles.button, isRunning ? styles.runButtonDisabled : styles.runButton]}>
             <Text style={isRunning ? styles.runButtonTextDisabled : styles.runButtonText}>Ejecutar</Text>
           </Pressable>
         </HStack>
@@ -192,15 +225,12 @@ const Editor: React.FC = () => {
             }}
           />
 
-          <Animated.View style={[styles.console, animatedStyle]}>
-            {
-              activeTab?.lastExecutionResult.map((line, index) => {
-                return (
-                  <Text key={`${line}-${index}`}>{line}</Text>
-                )
-              })
-            }
-          </Animated.View>
+          <CodeResult 
+            translateY={translateY} 
+            codeResult={activeTab!!.lastExecutionResult} 
+            width={width}
+            height={height}
+          />
       </View>
 
       <View style={styles.sencodaryInfoContainer}>

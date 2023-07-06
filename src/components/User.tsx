@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, Image} from 'react-native';
 
 import {theme} from '../data/theme';
 
-const bagdeSize = 11;
+const bagdeSize = 12;
 
 const User: React.FC = ({}) => {
   return (
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
     height: bagdeSize,
     width: bagdeSize,
     borderRadius: bagdeSize / 2,
-    borderWidth: 1,
+    borderWidth: 3,
     borderStyle: "solid",
-    borderColor: theme.colors.sidebar.backgroundColor,
+    borderColor: theme.colors.sidebar.textInputBackgroundColor,
     backgroundColor: theme.colors.sidebar.iconColor,
     position: "absolute",
     transform: [

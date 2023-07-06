@@ -53,3 +53,12 @@ export const registerChangeActiveTabListener = (callback: (tabId: string) => voi
 export const emitChangeActiveTabEvent = (newActiveTabId: TabContent) => {
     emitter.emit(changeActiveTabEventName, newActiveTabId);
 }
+
+const triggerFakeIntervalEventName = "trigger.fake.interval";
+export const addTriggerFakeIntervalListener = (callback: () => void) => {
+    return emitter.addListener(triggerFakeIntervalEventName, callback);
+}
+
+export const emitTriggerFakeIntervalEvent = () => {
+    emitter.emit(triggerFakeIntervalEventName);
+}

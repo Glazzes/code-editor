@@ -39,7 +39,7 @@ const GetStarted: React.FC = () => {
           {" "}crear una nueva pestaña
         </Text>
         <Text style={styles.text}>
-          <span style={styles.chipContainer}>ctrl</span> + <span style={styles.chipContainer}>k</span> 
+          <span style={styles.chipContainer}>alt</span> + <span style={styles.chipContainer}>k</span> 
           {" "}cerrar pestaña activa
         </Text>
         <Text style={styles.text}>
