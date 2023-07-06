@@ -4,7 +4,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import Logo from './Logo';
-import HStack from './HStack';
+import { HStack } from '../layouts';
 
 import {animationDuration, modalBezierIn } from '../data/animations';
 import {TabContent} from '../types/tabcontent';
@@ -40,7 +40,10 @@ const NewTabModal: React.FC<NewTabModalProps> = ({onClose}) => {
       name: tabName,
       language: (language as Language),
       code: "",
-      lastExecutionResult: []
+      lastExecution: {
+        code: [],
+        elapsedTime: 0
+      }
     }
 
     setActiveTab(newTab);
@@ -181,7 +184,7 @@ const styles = StyleSheet.create({
     height: theme.sizes.touchableHeight,
     backgroundColor: theme.colors.modal.inputTextBackgroundColor,
     borderRadius: theme.spacing.s2,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: theme.colors.modal.inputTextBorderColor,
     outlineStyle: "none"
   },

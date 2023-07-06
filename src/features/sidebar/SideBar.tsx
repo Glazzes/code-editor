@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import {View, Text, StyleSheet, useWindowDimensions, TextInput, FlatList, ListRenderItemInfo} from 'react-native';
 
 import IonIcon from '@expo/vector-icons/Ionicons';
-import Logo from '../Logo';
-import User from '../User';
-import SideBarTab from '../SideBarTab';
+import Logo from '../../components/Logo';
+import User from '../../components/User';
+import SideBarTab from './SideBarTab';
 import {ToolTipContainer} from '../../layouts';
 
 import {TabContent} from '../../types/tabcontent';
 
 import {theme} from '../../data/theme';
-import PressableOpacity from '../PressableOpacity';
+import PressableOpacity from '../../components/PressableOpacity';
 import { emitOpenNewTabModalEvent } from '../../lib/emitter';
 
 type SideBarProps = {
@@ -23,7 +23,7 @@ function keyExtractor(item: TabContent, index: number): string {
 
 const SideBar: React.FC<SideBarProps> = ({tabs}) => {
   const {height} = useWindowDimensions();
-  const sideBarHeight = height - theme.spacing.s2 * 2;
+  const sideBarHeight = height - theme.spacing.s4 * 2;
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredTabs, setFilteredTabs] = useState<TabContent[]>(tabs);
@@ -74,7 +74,7 @@ const SideBar: React.FC<SideBarProps> = ({tabs}) => {
 
 const styles = StyleSheet.create({
   sidebar: {
-    width: 300,
+    width: 280,
     borderRadius: theme.spacing.s4,
     backgroundColor: theme.colors.sidebar.backgroundColor,
     padding: theme.spacing.s4,

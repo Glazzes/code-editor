@@ -2,17 +2,17 @@ import React, { useContext, useEffect, useState } from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 import IonIcon from '@expo/vector-icons/Ionicons';
-import PressableOpacity from './PressableOpacity';
+import PressableOpacity from '../../components/PressableOpacity';
 
-import {findTextSearchMatches, TextSearchMatch} from '../utils/findSearchMatches';
-import {TabContent} from '../types/tabcontent';
-import {TabContext} from '../context/TabProvider';
-import {theme} from '../data/theme';
-import {HStack} from '../layouts';
-import { activeTabLSId, rememberCloseTabDecision } from '../data/constants';
-import databaseService from '../lib/db';
-import { emitOpenGenericModalEvent } from '../lib/emitter';
-import { closeMessageData } from '../data/modaldata';
+import {findTextSearchMatches, TextSearchMatch} from '../../utils/findSearchMatches';
+import {TabContent} from '../../types/tabcontent';
+import {TabContext} from '../../context/TabProvider';
+import {theme} from '../../data/theme';
+import {HStack} from '../../layouts';
+import { activeTabLSId, rememberCloseTabDecisionKey } from '../../data/constants';
+import databaseService from '../../lib/db';
+import { emitOpenGenericModalEvent } from '../../lib/emitter';
+import { closeMessageData } from '../../data/modaldata';
 
 type SideBarTabProps = {
   tab: TabContent;
@@ -33,10 +33,9 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
   }
 
   const removeTabWithDecision = () => {
-    const lastDecision = localStorage.getItem(rememberCloseTabDecision);
+    const lastDecision = localStorage.getItem(rememberCloseTabDecisionKey);
     if(lastDecision !== null) {
       removeTab();
-      return;
     }else {
       emitOpenGenericModalEvent({...closeMessageData, onPress: removeTab});
     }
@@ -53,10 +52,7 @@ const SideBarTab: React.FC<SideBarTabProps> = ({tab, index, searchTerm}) => {
       }
 
       if(activeTabIndex === undefined) throw Error("An active must be defined");
-
-      if(tabs.length == 1) {
-        setActiveTab(undefined);
-      }
+      if(tabs.length == 1) setActiveTab(undefined);
 
       if(activeTabIndex === 0 && tabs.length >= 2) {
         setActiveTab(tabs[1]);

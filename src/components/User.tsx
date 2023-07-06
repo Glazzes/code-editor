@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, Image} from 'react-native';
 
 import {theme} from '../data/theme';
 
-const bagdeSize = 12;
+const bagdeSize = 14;
 
 const User: React.FC = ({}) => {
   return (

@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
   textInput: {
     fontFamily: theme.fonts.bold,
     fontSize: 30,
+    color: theme.colors.editor.tabTitle,
     borderRadius: theme.spacing.s2,
   },
 })

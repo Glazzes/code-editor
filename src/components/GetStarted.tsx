@@ -6,14 +6,6 @@ const GetStarted: React.FC = () => {
   return (
     <ScrollView style={styles.root}>
       <View style={styles.mainInfoContainer}>
-        <View style={styles.information}>
-          <Text style={styles.informationText}>
-            ¿Eres un reclutador? ¿Alguien sin experiencia tecnica? o simplemente no sabes que hacer en este
-            proyecto, no te preocupes, puedes ver un video donde te explico la funcionalidad detras de
-            este proyecto dando click aqui.
-          </Text>
-        </View>
-
         <h1 style={styles.title}>Comencemos (Proyecto en desarrollo)</h1>
 
         <Text style={styles.text}>
@@ -22,6 +14,14 @@ const GetStarted: React.FC = () => {
           entre los que se encuentran Bash, Go, Java, JavaScript y Python, cabe resaltar que la inclusion de 
           nuevos lenguages de programacion es una tarea simple de implementar.
         </Text>
+
+        <View style={styles.information}>
+          <Text style={styles.informationText}>
+            ¿Eres un reclutador? ¿Alguien sin experiencia tecnica? o simplemente no sabes que hacer en este
+            proyecto, no te preocupes, puedes ver un video donde te explico la funcionalidad detras de
+            este proyecto dando click aqui.
+          </Text>
+        </View>
 
         <View style={styles.warning}>
           <Text style={styles.warningText}>

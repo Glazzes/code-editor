@@ -26,13 +26,15 @@ type Theme = {
             warningTextColor: string,
         },
         editor: {
+            tabTitle: string;
             text: string;
             border: string;
             run: string;
             savedBackgroundColor: string,
             savedTextColor: string,
             savingBackgroindColor: string,
-            savingTextColor: string
+            savingTextColor: string,
+            footerIconColor: string
         },
         sidebar: {
             textColor: string;
@@ -72,31 +74,33 @@ export const theme: Theme = {
         generic: {
             buttonBackgroundColor: "#111727",
             infoBacgroundColor: "#cfdefe",
-            infoTextColor: "#3f77e1",
-            successBackgroundColor: "#e3f2ee",
-            successTextColor: "#3e6c58"
+            infoTextColor: "#233037",
+            successBackgroundColor: "#82c185",
+            successTextColor: "#447542"
         },
         getStarted: {
-            textColor: "#111727",
-            infoBacgroundColor: "#eef9fd",
+            textColor: "#a8aaac",
+            infoBacgroundColor: "#c2dbe9",
             infoTextColor: "#193c47",
-            warningBackgroundColor: "#fff8e6",
-            warningTextColor: "#4d3800",
+            warningBackgroundColor: "#ffffff",
+            warningTextColor: "#464646",
         },
         editor: {
+            tabTitle: "#ffffff",
             text: "#000312",
-            border: "#e8e8e8",
-            run: "#111727",
+            border: "#292b2d",
+            run: "#2c55fb",
             savedBackgroundColor: "",
             savedTextColor: "",
             savingBackgroindColor: "",
-            savingTextColor: ""
+            savingTextColor: "",
+            footerIconColor: "#fff"
         },
         sidebar: {
             textColor: "#ffffff",
-            backgroundColor: "#111727",
+            backgroundColor: "#292c2d",
             iconColor: "#ffffff",
-            textInputBackgroundColor: "#343b48",
+            textInputBackgroundColor: "#3c4041",
             inputTextColor: "#d4d9e3",
             textMatchFound: "#00abfb"
         },

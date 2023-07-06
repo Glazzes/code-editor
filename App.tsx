@@ -1,13 +1,13 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useFonts} from 'expo-font';
-import SideBar from './src/components/editor/SideBar';
+import SideBar from './src/features/sidebar/SideBar';
 import {theme} from './src/data/theme';
 import {DarkOpacityOverlay} from './src/layouts';
 import NewTabModal from './src/components/NewTabModal';
 import GetStarted from './src/components/GetStarted';
 import {addNewTabEventListener, addOpenGenericModalListener, addOpenNewtbaModalListener, registerUpdateActiveTabNameListener} from './src/lib/emitter';
-import Editor from './src/features/Editor';
+import Editor from './src/features/editor/Editor';
 
 import TabProvider, { TabContext } from './src/context/TabProvider';
 import databaseService from './src/lib/db';
@@ -92,8 +92,9 @@ const App = () => {
     return () => {
       openNewModalSub.remove();
       openGenericModal.remove();
-      window.removeEventListener("keydown", ignoreShortcuts);
+      
       window.removeEventListener("keyup", onControlKeyShortcut);
+      window.removeEventListener("keydown", ignoreShortcuts);
     }
   }, []);
 
@@ -184,7 +185,8 @@ export default function TabApp () {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.s2,
+    backgroundColor: "#181818",
+    padding: theme.spacing.s4,
     flexDirection: "row",
     justifyContent: 'center',
   },

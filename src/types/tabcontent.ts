@@ -5,5 +5,8 @@ export type TabContent = {
   name: string;
   language: Language
   code: string,
-  lastExecutionResult: string[];
+  lastExecution: {
+    code: string[];
+    elapsedTime: number;
+  };
 }

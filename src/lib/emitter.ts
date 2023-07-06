@@ -3,6 +3,7 @@ import { ModalData } from "../data/modaldata";
 import {TabContent} from "../types/tabcontent";
 
 type TabCallback = (newTab: TabContent) => void; 
+type GenericModalData = ModalData & {onPress: () => void};
 
 const emitter = new EventEmitter();
 
@@ -16,12 +17,11 @@ export const emitOpenNewTabModalEvent = () => {
 }
 
 const openGenericModal = "open.generic.modal";
-type CompleteModalData = ModalData & {onPress: () => void};
-export const addOpenGenericModalListener = (callback: (data: CompleteModalData) => void): EventSubscription => {
+export const addOpenGenericModalListener = (callback: (data: GenericModalData) => void): EventSubscription => {
     return emitter.addListener(openGenericModal, callback);
 }
 
-export const emitOpenGenericModalEvent = (data: CompleteModalData) => {
+export const emitOpenGenericModalEvent = (data: GenericModalData) => {
     emitter.emit(openGenericModal, data);
 }
 
